@@ -182,14 +182,25 @@ export const clinicalExperienceOptions = [
 export const serviceCategoryOptions = [
   "Food security",
   "Education or tutoring",
+  "Mentoring",
+  "Elder care",
+  "Homeless outreach",
   "Housing insecurity",
   "Refugee or immigrant support",
   "Public health outreach",
   "Crisis support",
   "Youth mentorship",
-  "Faith-based service",
+  "Domestic violence support",
+  "Substance use recovery support",
   "Disability support",
+  "LGBTQ+ support",
+  "Prison reentry or justice work",
+  "Language access or interpretation",
+  "Transportation access",
   "Environmental justice",
+  "Faith-based service",
+  "Campus peer support",
+  "Other",
 ] as const;
 
 export const dashboardNavigation = [

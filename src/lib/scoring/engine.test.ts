@@ -76,4 +76,28 @@ describe("calculateProfileReadiness", () => {
     expect(verboseResult.categoryScores).toEqual(baseResult.categoryScores);
     expect(verboseResult.gapYearPrediction).toBe(baseResult.gapYearPrediction);
   });
+
+  it("ignores deprecated legacy fields when calculating the score", () => {
+    const baseProfile = sampleProfiles[1];
+    const legacyVariant = {
+      ...baseProfile,
+      patientFacingHours: 9999,
+      primaryCareShadowingHours: 999,
+      underservedServiceHours: 999,
+      paidClinicalWorkHours: 9999,
+    };
+
+    const baseResult = calculateProfileReadiness(
+      baseProfile,
+      defaultBenchmarkConfig,
+    );
+    const legacyResult = calculateProfileReadiness(
+      legacyVariant,
+      defaultBenchmarkConfig,
+    );
+
+    expect(legacyResult.overallScore).toBe(baseResult.overallScore);
+    expect(legacyResult.categoryScores).toEqual(baseResult.categoryScores);
+    expect(legacyResult.gapYearPrediction).toBe(baseResult.gapYearPrediction);
+  });
 });

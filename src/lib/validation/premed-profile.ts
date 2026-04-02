@@ -146,6 +146,37 @@ export const premedProfileSchema = z.object({
 export type PremedProfileInput = z.output<typeof premedProfileSchema>;
 export type PremedProfileFormValues = z.input<typeof premedProfileSchema>;
 
+export function normalizePremedProfileInput(
+  input: unknown,
+): Record<string, unknown> | unknown {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return input;
+  }
+
+  const values = { ...(input as Record<string, unknown>) };
+  const paidClinicalHours =
+    typeof values.paidClinicalHours === "number" ? values.paidClinicalHours : 0;
+  const clinicalVolunteerHours =
+    typeof values.clinicalVolunteerHours === "number"
+      ? values.clinicalVolunteerHours
+      : 0;
+
+  // Deprecated fields remain in storage for backward compatibility, but
+  // new submissions no longer rely on separate user input for them.
+  values.patientFacingHours = paidClinicalHours + clinicalVolunteerHours;
+  values.primaryCareShadowingHours =
+    typeof values.primaryCareShadowingHours === "number"
+      ? values.primaryCareShadowingHours
+      : 0;
+  values.underservedServiceHours =
+    typeof values.underservedServiceHours === "number"
+      ? values.underservedServiceHours
+      : 0;
+  values.paidClinicalWorkHours = paidClinicalHours;
+
+  return values;
+}
+
 export const emptyProfileValues: PremedProfileFormValues = {
   fullName: "",
   email: "",

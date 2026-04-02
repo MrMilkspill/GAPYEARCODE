@@ -158,10 +158,24 @@ export function ProfileForm({
   const [isPending, startTransition] = useTransition();
 
   const defaultValues = useMemo(
-    () => ({
-      ...emptyProfileValues,
-      ...initialValues,
-    }),
+    () => {
+      const mergedValues = {
+        ...emptyProfileValues,
+        ...initialValues,
+      };
+
+      if (
+        (mergedValues.customServiceCategories?.length ?? 0) > 0 &&
+        !(mergedValues.serviceCategories ?? []).includes("Other")
+      ) {
+        mergedValues.serviceCategories = [
+          ...(mergedValues.serviceCategories ?? []),
+          "Other",
+        ];
+      }
+
+      return mergedValues;
+    },
     [initialValues],
   );
 
@@ -169,20 +183,35 @@ export function ProfileForm({
     register,
     control,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<PremedProfileFormValues>({
     resolver: zodResolver(premedProfileSchema),
     defaultValues,
   });
 
+  const selectedServiceCategories = watch("serviceCategories") ?? [];
+  const showCustomServiceCategoryInput =
+    selectedServiceCategories.includes("Other");
+
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
       const endpoint =
         mode === "create" ? "/api/profiles" : `/api/profiles/${profileId}`;
       const method = mode === "create" ? "POST" : "PATCH";
+      const totalClinicalHours =
+        values.paidClinicalHours + values.clinicalVolunteerHours;
       const submissionValues = {
         ...defaultValues,
         ...values,
+        patientFacingHours: totalClinicalHours,
+        primaryCareShadowingHours: 0,
+        underservedServiceHours: 0,
+        paidClinicalWorkHours: values.paidClinicalHours,
+        customServiceCategories: selectedServiceCategories.includes("Other")
+          ? values.customServiceCategories
+          : [],
       };
 
       const response = await fetch(endpoint, {
@@ -417,7 +446,7 @@ export function ProfileForm({
         title="Clinical Exposure"
         description="Hours and role breadth are scored here. Blank hour fields save as 0."
       >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <FieldGroup
             label="Paid clinical hours"
             error={errors.paidClinicalHours?.message}
@@ -434,16 +463,6 @@ export function ProfileForm({
           >
             <Input
               {...register("clinicalVolunteerHours", zeroNumberFieldOptions)}
-              type="number"
-              min={0}
-            />
-          </FieldGroup>
-          <FieldGroup
-            label="Patient-facing hours"
-            error={errors.patientFacingHours?.message}
-          >
-            <Input
-              {...register("patientFacingHours", zeroNumberFieldOptions)}
               type="number"
               min={0}
             />
@@ -480,9 +499,9 @@ export function ProfileForm({
 
       <SectionCard
         title="Shadowing"
-        description="Purely quantitative shadowing inputs: total hours, physician count, and primary-care exposure."
+        description="Purely quantitative shadowing inputs: total hours, physician count, specialty mix, and virtual exposure."
       >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FieldGroup
             label="Total hours"
             error={errors.shadowingTotalHours?.message}
@@ -499,16 +518,6 @@ export function ProfileForm({
           >
             <Input
               {...register("physiciansShadowed", zeroNumberFieldOptions)}
-              type="number"
-              min={0}
-            />
-          </FieldGroup>
-          <FieldGroup
-            label="Primary care hours"
-            error={errors.primaryCareShadowingHours?.message}
-          >
-            <Input
-              {...register("primaryCareShadowingHours", zeroNumberFieldOptions)}
               type="number"
               min={0}
             />
@@ -606,25 +615,15 @@ export function ProfileForm({
 
       <SectionCard
         title="Service"
-        description="Service scoring is based on hours, underserved exposure, leadership, and category breadth."
+        description="Service scoring is based on total hours, leadership, and category breadth."
       >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <FieldGroup
             label="Total service hours"
             error={errors.nonClinicalVolunteerHours?.message}
           >
             <Input
               {...register("nonClinicalVolunteerHours", zeroNumberFieldOptions)}
-              type="number"
-              min={0}
-            />
-          </FieldGroup>
-          <FieldGroup
-            label="Underserved hours"
-            error={errors.underservedServiceHours?.message}
-          >
-            <Input
-              {...register("underservedServiceHours", zeroNumberFieldOptions)}
               type="number"
               min={0}
             />
@@ -655,11 +654,21 @@ export function ProfileForm({
                     label={option}
                     checked={(field.value ?? []).includes(option)}
                     onToggle={() =>
-                      field.onChange(
-                        (field.value ?? []).includes(option)
+                      (() => {
+                        const isSelected = (field.value ?? []).includes(option);
+                        const nextValues = isSelected
                           ? (field.value ?? []).filter((value) => value !== option)
-                          : [...(field.value ?? []), option],
-                      )
+                          : [...(field.value ?? []), option];
+
+                        field.onChange(nextValues);
+
+                        if (option === "Other" && isSelected) {
+                          setValue("customServiceCategories", [], {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }
+                      })()
                     }
                   />
                 ))}
@@ -667,6 +676,31 @@ export function ProfileForm({
             )}
           />
         </FieldGroup>
+        {showCustomServiceCategoryInput ? (
+          <FieldGroup
+            label="Other service/activity categories"
+            description="Add custom categories separated by commas."
+          >
+            <Controller
+              control={control}
+              name="customServiceCategories"
+              render={({ field }) => (
+                <Input
+                  value={(field.value ?? []).join(", ")}
+                  onChange={(event) =>
+                    field.onChange(
+                      event.target.value
+                        .split(",")
+                        .map((value) => value.trim())
+                        .filter(Boolean),
+                    )
+                  }
+                  placeholder="Mutual aid, legal aid, neighborhood organizing"
+                />
+              )}
+            />
+          </FieldGroup>
+        ) : null}
       </SectionCard>
 
       <SectionCard
@@ -716,16 +750,6 @@ export function ProfileForm({
           >
             <Input
               {...register("paidNonClinicalWorkHours", zeroNumberFieldOptions)}
-              type="number"
-              min={0}
-            />
-          </FieldGroup>
-          <FieldGroup
-            label="Paid clinical work hours"
-            error={errors.paidClinicalWorkHours?.message}
-          >
-            <Input
-              {...register("paidClinicalWorkHours", zeroNumberFieldOptions)}
               type="number"
               min={0}
             />

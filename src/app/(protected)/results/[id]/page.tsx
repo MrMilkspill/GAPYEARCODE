@@ -51,10 +51,8 @@ export default async function ResultPage({ params }: ResultPageProps) {
     notFound();
   }
 
-  const clinicalHours = Math.max(
-    profile.patientFacingHours,
-    profile.paidClinicalHours + profile.clinicalVolunteerHours,
-  );
+  const clinicalHours =
+    profile.paidClinicalHours + profile.clinicalVolunteerHours;
 
   const radarData = score.categoryBreakdown.map((item) => ({
     label: item.label,

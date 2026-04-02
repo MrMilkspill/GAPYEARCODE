@@ -1,5 +1,6 @@
 import { calculateProfileReadiness } from "@/lib/scoring/engine";
 import {
+  normalizePremedProfileInput,
   premedProfileSchema,
   type PremedProfileInput,
 } from "@/lib/validation/premed-profile";
@@ -32,7 +33,7 @@ export function buildProfileSubmission(
   input: unknown,
   benchmarks: BenchmarkConfig,
 ) {
-  const profile = premedProfileSchema.parse(input);
+  const profile = premedProfileSchema.parse(normalizePremedProfileInput(input));
   const result = calculateProfileReadiness(profile, benchmarks);
 
   return {

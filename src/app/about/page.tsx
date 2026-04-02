@@ -11,7 +11,7 @@ const benchmarkRows = [
   ["MCAT", "515+ excellent, 510+ strong, 505+ moderate"],
   ["Clinical", "300+ hours strong, 150+ moderate"],
   ["Service", "150+ non-clinical hours strong, 75+ moderate"],
-  ["Shadowing", "40+ hours strong, with some primary care exposure"],
+  ["Shadowing", "40+ hours strong, with physician breadth"],
   ["Research", "300+ stronger baseline, higher for research-heavy lists"],
 ];
 

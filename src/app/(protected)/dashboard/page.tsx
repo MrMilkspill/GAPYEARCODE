@@ -71,10 +71,8 @@ export default async function DashboardPage() {
     target: Math.round(item.benchmarkTarget),
   }));
 
-  const clinicalHours = Math.max(
-    latestProfile.patientFacingHours,
-    latestProfile.paidClinicalHours + latestProfile.clinicalVolunteerHours,
-  );
+  const clinicalHours =
+    latestProfile.paidClinicalHours + latestProfile.clinicalVolunteerHours;
 
   return (
     <div className="space-y-8">

@@ -222,10 +222,8 @@ function evaluateClinicalExposure(
   profile: PremedProfileInput,
   config: BenchmarkConfig,
 ): CategoryEvaluation {
-  const clinicalHours = Math.max(
-    profile.patientFacingHours,
-    profile.paidClinicalHours + profile.clinicalVolunteerHours,
-  );
+  const clinicalHours =
+    profile.paidClinicalHours + profile.clinicalVolunteerHours;
   const typesCount = countUnique([
     ...profile.clinicalExperienceTypes,
     ...profile.customClinicalExperienceTypes,
@@ -233,10 +231,6 @@ function evaluateClinicalExposure(
   const totalHoursScore = scoreFromThresholds(
     clinicalHours,
     config.thresholds.clinicalExposure.totalHours,
-  );
-  const patientFacingScore = scoreFromThresholds(
-    profile.patientFacingHours,
-    config.thresholds.clinicalExposure.patientFacingHours,
   );
   const typesScore = scoreFromThresholds(
     typesCount,
@@ -248,14 +242,13 @@ function evaluateClinicalExposure(
   return {
     score: clamp(
       weightedAverage([
-        { score: totalHoursScore, weight: 50 },
-        { score: patientFacingScore, weight: 35 },
-        { score: typesScore, weight: 15 },
+        { score: totalHoursScore, weight: 80 },
+        { score: typesScore, weight: 20 },
       ]) + mixBonus,
     ),
     benchmarkTarget: 75,
     highlights: [
-      `${clinicalHours} combined clinical hours and ${profile.patientFacingHours} patient-facing hours are the main signal here.`,
+      `${clinicalHours} combined clinical hours drive this category.`,
       `${typesCount || 0} distinct clinical role type${typesCount === 1 ? "" : "s"} broadens the narrative.`,
       mixBonus
         ? "Having both paid and volunteer clinical exposure strengthens consistency."
@@ -276,10 +269,6 @@ function evaluateService(
     profile.nonClinicalVolunteerHours,
     config.thresholds.service.totalHours,
   );
-  const underservedScore = scoreFromThresholds(
-    profile.underservedServiceHours,
-    config.thresholds.service.underservedHours,
-  );
   const categoriesScore = scoreFromThresholds(
     categoriesCount,
     config.thresholds.service.categories,
@@ -289,14 +278,13 @@ function evaluateService(
   return {
     score: clamp(
       weightedAverage([
-        { score: totalScore, weight: 50 },
-        { score: underservedScore, weight: 35 },
-        { score: categoriesScore, weight: 15 },
+        { score: totalScore, weight: 80 },
+        { score: categoriesScore, weight: 20 },
       ]) + leadershipBonus,
     ),
     benchmarkTarget: 72,
     highlights: [
-      `${profile.nonClinicalVolunteerHours} non-clinical service hours and ${profile.underservedServiceHours} underserved-community hours drive this category.`,
+      `${profile.nonClinicalVolunteerHours} non-clinical service hours set the baseline here.`,
       profile.serviceLeadership
         ? "Holding leadership in service roles adds depth beyond one-time service."
         : "Leadership within service work would raise this category further.",
@@ -363,10 +351,6 @@ function evaluateShadowing(
     profile.physiciansShadowed,
     config.thresholds.shadowing.physicians,
   );
-  const primaryCareScore = scoreFromThresholds(
-    profile.primaryCareShadowingHours,
-    config.thresholds.shadowing.primaryCareHours,
-  );
   const virtualShare =
     profile.shadowingTotalHours === 0
       ? 0
@@ -375,15 +359,14 @@ function evaluateShadowing(
   return {
     score: clamp(
       weightedAverage([
-        { score: totalScore, weight: 60 },
-        { score: physiciansScore, weight: 20 },
-        { score: primaryCareScore, weight: 20 },
+        { score: totalScore, weight: 75 },
+        { score: physiciansScore, weight: 25 },
       ]) - (virtualShare > 0.75 && profile.shadowingTotalHours < 40 ? 6 : 0),
     ),
     benchmarkTarget: 70,
     highlights: [
       `${profile.shadowingTotalHours} total shadowing hours and ${profile.physiciansShadowed} physician${profile.physiciansShadowed === 1 ? "" : "s"} shadowed determine most of this score.`,
-      `${profile.primaryCareShadowingHours} hours in primary care helps show breadth beyond specialty observation.`,
+      "Breadth across more than one physician is helpful, but total exposure matters more than specialty mix.",
       virtualShare > 0.75 && profile.shadowingTotalHours < 40
         ? "A heavy virtual-only shadowing mix weakens this section."
         : "The current shadowing mix is acceptable for a general readiness estimate.",
@@ -428,13 +411,13 @@ function evaluateEmploymentContext(
   config: BenchmarkConfig,
 ): CategoryEvaluation {
   const totalEmploymentHours =
-    profile.paidNonClinicalWorkHours + profile.paidClinicalWorkHours;
+    profile.paidNonClinicalWorkHours + profile.paidClinicalHours;
   const totalScore = scoreFromThresholds(
     totalEmploymentHours,
     config.thresholds.employmentContext.totalHours,
   );
   const clinicalScore = scoreFromThresholds(
-    profile.paidClinicalWorkHours,
+    profile.paidClinicalHours,
     config.thresholds.employmentContext.paidClinicalHours,
   );
   const contextBonus =
@@ -458,7 +441,7 @@ function evaluateEmploymentContext(
       profile.workedDuringSemesters
         ? "Working during semesters adds positive context."
         : "Sustained work during semesters would provide more context.",
-      profile.paidClinicalWorkHours > 0
+      profile.paidClinicalHours > 0
         ? "Paid clinical work also supports the clinical story."
         : "Paid non-clinical work still adds context even when it is not directly clinical.",
     ],
@@ -548,10 +531,7 @@ function buildComparisonMetrics(
     createComparisonMetric(
       "clinicalHours",
       "Clinical hours",
-      Math.max(
-        profile.patientFacingHours,
-        profile.paidClinicalHours + profile.clinicalVolunteerHours,
-      ),
+      profile.paidClinicalHours + profile.clinicalVolunteerHours,
       config.thresholds.clinicalExposure.totalHours.strong,
       "hours",
     ),
@@ -638,7 +618,7 @@ function buildImprovementPlan(
     const gap = Math.max(0, clinicalMetric.targetValue - clinicalMetric.userValue);
     suggestions.push({
       area: "Clinical exposure",
-      target: `Add about ${Math.round(gap)} more patient-facing or clinically grounded hours to reach roughly ${clinicalMetric.targetValue} total.`,
+      target: `Add about ${Math.round(gap)} more clinically grounded hours to reach roughly ${clinicalMetric.targetValue} total.`,
       rationale:
         "Clinical work is a high-weight category and is hard to replace with other strengths.",
       timeline: "Over the next 6 to 12 months",
@@ -652,7 +632,7 @@ function buildImprovementPlan(
     const gap = Math.max(0, serviceMetric.targetValue - serviceMetric.userValue);
     suggestions.push({
       area: "Service",
-      target: `Build another ${Math.round(gap)} non-clinical service hours, ideally in consistent underserved-facing work.`,
+      target: `Build another ${Math.round(gap)} non-clinical service hours, ideally in a consistent community-facing role.`,
       rationale:
         "Strong service helps round out the profile and matters especially for community-focused schools.",
       timeline: "Over the next 6 to 12 months",
