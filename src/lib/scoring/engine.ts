@@ -736,6 +736,43 @@ function buildExplanation({
   return `${predictionLabel} because the profile currently grades out as ${tierLabel}. The strongest areas are ${topAreas}, while ${bottomAreas} remain the biggest constraints. ${strengths[0]} ${weaknesses[0]}`;
 }
 
+function applyOverallCalibration(
+  rawWeightedScore: number,
+  categoryScores: Record<CategoryKey, number>,
+  config: BenchmarkConfig,
+) {
+  let calibratedScore = rawWeightedScore;
+  const excellentCount = Object.values(categoryScores).filter(
+    (score) => score >= config.adjustments.excellentCategoryFloor,
+  ).length;
+
+  if (
+    excellentCount < config.adjustments.minExcellentCategoriesForStrongCap
+  ) {
+    calibratedScore = Math.min(
+      calibratedScore,
+      config.adjustments.strongOverallCap,
+    );
+  }
+
+  if (
+    excellentCount < config.adjustments.minExcellentCategoriesForEliteCap
+  ) {
+    calibratedScore = Math.min(
+      calibratedScore,
+      config.adjustments.eliteOverallCap,
+    );
+  }
+
+  if (categoryScores.academics < 45) {
+    calibratedScore = Math.min(calibratedScore, 62);
+  } else if (categoryScores.academics < 55) {
+    calibratedScore = Math.min(calibratedScore, 72);
+  }
+
+  return roundScore(clamp(calibratedScore));
+}
+
 export function calculateProfileReadiness(
   profile: PremedProfileInput,
   config: BenchmarkConfig = defaultBenchmarkConfig,
@@ -766,22 +803,12 @@ export function calculateProfileReadiness(
     }, 0),
   );
 
-  const contextAdjustment =
-    (profile.upwardGradeTrend ? 1.5 : 0) +
-    (profile.workedDuringSemesters ? 1 : 0) +
-    (categoryScores.service >= 75 && categoryScores.leadership >= 70
-      ? config.adjustments.strongServiceLeadershipOffset
-      : 0);
-
-  let overallScore = clamp(rawWeightedScore + contextAdjustment);
-
-  if (categoryScores.academics < 45) {
-    overallScore = Math.min(overallScore, 62);
-  } else if (categoryScores.academics < 55) {
-    overallScore = Math.min(overallScore, 72);
-  }
-
-  overallScore = roundScore(overallScore);
+  const overallScore = applyOverallCalibration(
+    rawWeightedScore,
+    categoryScores,
+    config,
+  );
+  const contextAdjustment = roundScore(overallScore - rawWeightedScore);
 
   const categoryBreakdown: CategoryBreakdown[] = (
     Object.keys(categoryEvaluations) as CategoryKey[]
@@ -831,7 +858,7 @@ export function calculateProfileReadiness(
   return {
     overallScore,
     rawWeightedScore,
-    contextAdjustment: roundScore(contextAdjustment),
+    contextAdjustment,
     competitivenessTier,
     gapYearPrediction,
     confidenceLevel,

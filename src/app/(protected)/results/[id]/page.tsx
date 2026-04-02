@@ -150,7 +150,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Context adjustment</p>
+                <p className="text-sm text-muted-foreground">Calibration adjustment</p>
                 <p className="mt-2 text-xl font-semibold">
                   {score.contextAdjustment >= 0 ? "+" : ""}
                   {score.contextAdjustment}

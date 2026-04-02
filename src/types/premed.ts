@@ -104,6 +104,11 @@ export interface BenchmarkConfig {
     noGapClinicalFloor: number;
     noGapServiceFloor: number;
     noGapShadowingFloor: number;
+    strongOverallCap: number;
+    eliteOverallCap: number;
+    excellentCategoryFloor: number;
+    minExcellentCategoriesForStrongCap: number;
+    minExcellentCategoriesForEliteCap: number;
     highConfidenceMargin: number;
     lowConfidenceMargin: number;
   };
