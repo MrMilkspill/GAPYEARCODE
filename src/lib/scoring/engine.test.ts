@@ -24,4 +24,40 @@ describe("calculateProfileReadiness", () => {
     expect(result.gapYearPrediction).toBe("TWO_PLUS_GAPS");
     expect(result.categoryScores.academics).toBeLessThan(55);
   });
+
+  it("does not change the score when only narrative text fields change", () => {
+    const baseProfile = sampleProfiles[1];
+    const verboseVariant = {
+      ...baseProfile,
+      clinicalRoleDescription:
+        "Detailed clinical reflection that should not influence the numeric scoring model.",
+      shadowingReflection:
+        "Long shadowing reflection that should not change the readiness estimate.",
+      researchContribution:
+        "Expanded research story that should not change the benchmark comparison.",
+      serviceExperience:
+        "Service narrative with more words but the same hours and categories.",
+      leadershipDescription:
+        "Leadership story with more words but the same responsibility level.",
+      jobDescription:
+        "Employment context explanation that should not affect the numeric score directly.",
+      distinctivenessFactor:
+        "Personal distinctiveness statement that remains intentionally unscored.",
+      gapYearPlans:
+        "Free-response gap year plans that should not change the prediction.",
+    };
+
+    const baseResult = calculateProfileReadiness(
+      baseProfile,
+      defaultBenchmarkConfig,
+    );
+    const verboseResult = calculateProfileReadiness(
+      verboseVariant,
+      defaultBenchmarkConfig,
+    );
+
+    expect(verboseResult.overallScore).toBe(baseResult.overallScore);
+    expect(verboseResult.categoryScores).toEqual(baseResult.categoryScores);
+    expect(verboseResult.gapYearPrediction).toBe(baseResult.gapYearPrediction);
+  });
 });

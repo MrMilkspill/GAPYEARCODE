@@ -11,7 +11,6 @@ import {
   roundScore,
   scoreFromThresholds,
   scoreLowerIsBetter,
-  textDepthScore,
   weightedAverage,
 } from "@/lib/scoring/helpers";
 import type { PremedProfileInput } from "@/lib/validation/premed-profile";
@@ -243,17 +242,15 @@ function evaluateClinicalExposure(
     typesCount,
     config.thresholds.clinicalExposure.experienceTypes,
   );
-  const reflectionScore = textDepthScore(profile.clinicalRoleDescription, 90, 220);
   const mixBonus =
     profile.paidClinicalHours > 0 && profile.clinicalVolunteerHours > 0 ? 4 : 0;
 
   return {
     score: clamp(
       weightedAverage([
-        { score: totalHoursScore, weight: 45 },
-        { score: patientFacingScore, weight: 30 },
+        { score: totalHoursScore, weight: 50 },
+        { score: patientFacingScore, weight: 35 },
         { score: typesScore, weight: 15 },
-        { score: reflectionScore, weight: 10 },
       ]) + mixBonus,
     ),
     benchmarkTarget: 75,
@@ -287,16 +284,14 @@ function evaluateService(
     categoriesCount,
     config.thresholds.service.categories,
   );
-  const narrativeScore = textDepthScore(profile.serviceExperience, 80, 200);
   const leadershipBonus = profile.serviceLeadership ? 5 : 0;
 
   return {
     score: clamp(
       weightedAverage([
-        { score: totalScore, weight: 45 },
-        { score: underservedScore, weight: 30 },
+        { score: totalScore, weight: 50 },
+        { score: underservedScore, weight: 35 },
         { score: categoriesScore, weight: 15 },
-        { score: narrativeScore, weight: 10 },
       ]) + leadershipBonus,
     ),
     benchmarkTarget: 72,
@@ -335,16 +330,14 @@ function evaluateResearch(
     outputs,
     config.thresholds.research.outputs,
   );
-  const contributionScore = textDepthScore(profile.researchContribution, 80, 220);
   const publicationBonus = profile.publicationsCount > 0 ? 4 : 0;
 
   return {
     score: clamp(
       weightedAverage([
-        { score: hoursScore, weight: 45 },
+        { score: hoursScore, weight: 55 },
         { score: projectsScore, weight: 20 },
-        { score: outputsScore, weight: 20 },
-        { score: contributionScore, weight: 15 },
+        { score: outputsScore, weight: 25 },
       ]) + publicationBonus,
     ),
     benchmarkTarget: profile.researchHeavyPreference ? 78 : 65,
@@ -374,7 +367,6 @@ function evaluateShadowing(
     profile.primaryCareShadowingHours,
     config.thresholds.shadowing.primaryCareHours,
   );
-  const reflectionScore = textDepthScore(profile.shadowingReflection, 70, 180);
   const virtualShare =
     profile.shadowingTotalHours === 0
       ? 0
@@ -383,10 +375,9 @@ function evaluateShadowing(
   return {
     score: clamp(
       weightedAverage([
-        { score: totalScore, weight: 50 },
+        { score: totalScore, weight: 60 },
         { score: physiciansScore, weight: 20 },
         { score: primaryCareScore, weight: 20 },
-        { score: reflectionScore, weight: 10 },
       ]) - (virtualShare > 0.75 && profile.shadowingTotalHours < 40 ? 6 : 0),
     ),
     benchmarkTarget: 70,
@@ -414,15 +405,13 @@ function evaluateLeadership(
   );
   const levelScore =
     config.thresholds.leadership.levelScores[profile.highestLeadershipLevel];
-  const narrativeScore = textDepthScore(profile.leadershipDescription, 70, 180);
 
   return {
     score: clamp(
       weightedAverage([
-        { score: hoursScore, weight: 40 },
-        { score: rolesScore, weight: 20 },
-        { score: levelScore, weight: 25 },
-        { score: narrativeScore, weight: 15 },
+        { score: hoursScore, weight: 45 },
+        { score: rolesScore, weight: 25 },
+        { score: levelScore, weight: 30 },
       ]),
     ),
     benchmarkTarget: 68,
@@ -448,7 +437,6 @@ function evaluateEmploymentContext(
     profile.paidClinicalWorkHours,
     config.thresholds.employmentContext.paidClinicalHours,
   );
-  const narrativeScore = textDepthScore(profile.jobDescription, 70, 160);
   const contextBonus =
     (profile.workedDuringSemesters
       ? config.adjustments.workedDuringSchoolBonus
@@ -460,9 +448,8 @@ function evaluateEmploymentContext(
   return {
     score: clamp(
       weightedAverage([
-        { score: totalScore, weight: 55 },
-        { score: clinicalScore, weight: 25 },
-        { score: narrativeScore, weight: 20 },
+        { score: totalScore, weight: 65 },
+        { score: clinicalScore, weight: 35 },
       ]) + contextBonus,
     ),
     benchmarkTarget: 65,

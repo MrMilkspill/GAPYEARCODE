@@ -8,10 +8,8 @@ import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { SectionCard } from "@/components/forms/section-card";
-import { TagInput } from "@/components/forms/tag-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   activitiesStatusOptions,
   applicationInterestOptions,
@@ -39,19 +37,30 @@ type ProfileFormProps = {
   profileId?: string;
 };
 
-const numberFieldOptions = {
-  setValueAs: (value: unknown) => {
-    if (typeof value === "number") {
-      return Number.isNaN(value) ? undefined : value;
-    }
+function parseNumberInput(value: unknown, fallback?: number) {
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? fallback : value;
+  }
 
-    if (typeof value !== "string") {
-      return value;
-    }
+  if (typeof value !== "string") {
+    return fallback;
+  }
 
-    const trimmed = value.trim();
-    return trimmed.length === 0 ? undefined : Number(trimmed);
-  },
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+
+  const parsed = Number(trimmed);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+const requiredNumberFieldOptions = {
+  setValueAs: (value: unknown) => parseNumberInput(value),
+};
+
+const zeroNumberFieldOptions = {
+  setValueAs: (value: unknown) => parseNumberInput(value, 0),
 };
 
 function FieldError({ message }: { message?: string }) {
@@ -168,15 +177,20 @@ export function ProfileForm({
 
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
-      const endpoint = mode === "create" ? "/api/profiles" : `/api/profiles/${profileId}`;
+      const endpoint =
+        mode === "create" ? "/api/profiles" : `/api/profiles/${profileId}`;
       const method = mode === "create" ? "POST" : "PATCH";
+      const submissionValues = {
+        ...defaultValues,
+        ...values,
+      };
 
       const response = await fetch(endpoint, {
         method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(submissionValues),
       });
 
       const payload = await response.json();
@@ -198,23 +212,31 @@ export function ProfileForm({
     <form onSubmit={onSubmit} className="space-y-8">
       <div className="rounded-3xl border border-border/70 bg-card/95 p-5 shadow-sm">
         <p className="text-sm text-muted-foreground">
-          This tool estimates readiness using transparent benchmarks. It does not
-          guarantee admission, and medical school admissions remain holistic.
+          This version focuses on comparable stats, hours, counts, and a few
+          structured preferences. Free-response narrative fields were removed from
+          scoring so the output stays grounded in measurable inputs.
         </p>
       </div>
 
       <SectionCard
-        title="Basic Info"
-        description="Core identity, school stage, and planning context."
+        title="Basic Context"
+        description="Only the core profile fields needed to identify and contextualize the snapshot."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <FieldGroup label="Full name" error={errors.fullName?.message}>
             <Input {...register("fullName")} placeholder="Alex Morgan" />
           </FieldGroup>
           <FieldGroup label="Email" error={errors.email?.message}>
-            <Input {...register("email")} type="email" placeholder="alex@example.com" />
+            <Input
+              {...register("email")}
+              type="email"
+              placeholder="alex@example.com"
+            />
           </FieldGroup>
-          <FieldGroup label="State of residence" error={errors.stateOfResidence?.message}>
+          <FieldGroup
+            label="State of residence"
+            error={errors.stateOfResidence?.message}
+          >
             <input
               list="states"
               {...register("stateOfResidence")}
@@ -228,15 +250,26 @@ export function ProfileForm({
             </datalist>
           </FieldGroup>
           <FieldGroup label="College name" error={errors.collegeName?.message}>
-            <Input {...register("collegeName")} placeholder="University of Michigan" />
-          </FieldGroup>
-          <FieldGroup label="Graduation year" error={errors.graduationYear?.message}>
             <Input
-              {...register("graduationYear", numberFieldOptions)}
-              type="number"
+              {...register("collegeName")}
+              placeholder="University of Michigan"
             />
           </FieldGroup>
-          <FieldGroup label="Current year in school" error={errors.currentYear?.message}>
+          <FieldGroup
+            label="Graduation year"
+            error={errors.graduationYear?.message}
+          >
+            <Input
+              {...register("graduationYear", requiredNumberFieldOptions)}
+              type="number"
+              min={2000}
+              max={2055}
+            />
+          </FieldGroup>
+          <FieldGroup
+            label="Current year in school"
+            error={errors.currentYear?.message}
+          >
             <Controller
               control={control}
               name="currentYear"
@@ -252,12 +285,13 @@ export function ProfileForm({
           <FieldGroup label="Major" error={errors.major?.message}>
             <Input {...register("major")} placeholder="Biology" />
           </FieldGroup>
-          <FieldGroup label="Minor" error={errors.minor?.message}>
-            <Input {...register("minor")} placeholder="Spanish" />
-          </FieldGroup>
           <FieldGroup label="Honors program">
             <label className="flex h-10 items-center gap-3 rounded-xl border border-input px-3">
-              <input type="checkbox" {...register("honorsProgram")} className="size-4" />
+              <input
+                type="checkbox"
+                {...register("honorsProgram")}
+                className="size-4"
+              />
               <span className="text-sm">Participated in an honors program</span>
             </label>
           </FieldGroup>
@@ -266,17 +300,37 @@ export function ProfileForm({
 
       <SectionCard
         title="Academics"
-        description="Numbers matter here, but the model still considers context and trajectory."
+        description="The model compares GPA, MCAT, withdrawals, low grades, and academic context."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <FieldGroup label="Cumulative GPA" error={errors.cumulativeGpa?.message}>
-            <Input {...register("cumulativeGpa", numberFieldOptions)} type="number" step="0.01" />
+          <FieldGroup
+            label="Cumulative GPA"
+            error={errors.cumulativeGpa?.message}
+          >
+            <Input
+              {...register("cumulativeGpa", requiredNumberFieldOptions)}
+              type="number"
+              step="0.01"
+              min={0}
+              max={4}
+            />
           </FieldGroup>
           <FieldGroup label="Science GPA" error={errors.scienceGpa?.message}>
-            <Input {...register("scienceGpa", numberFieldOptions)} type="number" step="0.01" />
+            <Input
+              {...register("scienceGpa", requiredNumberFieldOptions)}
+              type="number"
+              step="0.01"
+              min={0}
+              max={4}
+            />
           </FieldGroup>
           <FieldGroup label="MCAT total" error={errors.mcatTotal?.message}>
-            <Input {...register("mcatTotal", numberFieldOptions)} type="number" />
+            <Input
+              {...register("mcatTotal", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+              max={528}
+            />
           </FieldGroup>
           <FieldGroup label="School rigor" error={errors.schoolRigor?.message}>
             <Controller
@@ -292,26 +346,67 @@ export function ProfileForm({
             />
           </FieldGroup>
           <FieldGroup label="Chem/Phys" error={errors.mcatChemPhys?.message}>
-            <Input {...register("mcatChemPhys", numberFieldOptions)} type="number" />
+            <Input
+              {...register("mcatChemPhys", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+              max={132}
+            />
           </FieldGroup>
           <FieldGroup label="CARS" error={errors.mcatCars?.message}>
-            <Input {...register("mcatCars", numberFieldOptions)} type="number" />
+            <Input
+              {...register("mcatCars", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+              max={132}
+            />
           </FieldGroup>
-          <FieldGroup label="Bio/Biochem" error={errors.mcatBioBiochem?.message}>
-            <Input {...register("mcatBioBiochem", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Bio/Biochem"
+            error={errors.mcatBioBiochem?.message}
+          >
+            <Input
+              {...register("mcatBioBiochem", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+              max={132}
+            />
           </FieldGroup>
           <FieldGroup label="Psych/Soc" error={errors.mcatPsychSoc?.message}>
-            <Input {...register("mcatPsychSoc", numberFieldOptions)} type="number" />
+            <Input
+              {...register("mcatPsychSoc", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+              max={132}
+            />
           </FieldGroup>
-          <FieldGroup label="Number of W's" error={errors.numberOfWithdrawals?.message}>
-            <Input {...register("numberOfWithdrawals", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Number of W's"
+            error={errors.numberOfWithdrawals?.message}
+          >
+            <Input
+              {...register("numberOfWithdrawals", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="C's or below" error={errors.numberOfCsOrLower?.message}>
-            <Input {...register("numberOfCsOrLower", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="C's or below"
+            error={errors.numberOfCsOrLower?.message}
+          >
+            <Input
+              {...register("numberOfCsOrLower", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
           <FieldGroup label="Upward grade trend">
             <label className="flex h-10 items-center gap-3 rounded-xl border border-input px-3">
-              <input type="checkbox" {...register("upwardGradeTrend")} className="size-4" />
+              <input
+                type="checkbox"
+                {...register("upwardGradeTrend")}
+                className="size-4"
+              />
               <span className="text-sm">Grades trend upward over time</span>
             </label>
           </FieldGroup>
@@ -319,21 +414,45 @@ export function ProfileForm({
       </SectionCard>
 
       <SectionCard
-        title="Clinical Experience"
-        description="The tool values patient-facing time, variety, and clearly articulated impact."
+        title="Clinical Exposure"
+        description="Hours and role breadth are scored here. Blank hour fields save as 0."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <FieldGroup label="Paid clinical hours" error={errors.paidClinicalHours?.message}>
-            <Input {...register("paidClinicalHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Paid clinical hours"
+            error={errors.paidClinicalHours?.message}
+          >
+            <Input
+              {...register("paidClinicalHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Clinical volunteer hours" error={errors.clinicalVolunteerHours?.message}>
-            <Input {...register("clinicalVolunteerHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Clinical volunteer hours"
+            error={errors.clinicalVolunteerHours?.message}
+          >
+            <Input
+              {...register("clinicalVolunteerHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Patient-facing hours" error={errors.patientFacingHours?.message}>
-            <Input {...register("patientFacingHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Patient-facing hours"
+            error={errors.patientFacingHours?.message}
+          >
+            <Input
+              {...register("patientFacingHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
         </div>
-        <FieldGroup label="Clinical experience types">
+        <FieldGroup
+          label="Clinical role types"
+          description="Select the clinical settings you actually have. The model uses the count for breadth."
+        >
           <Controller
             control={control}
             name="clinicalExperienceTypes"
@@ -357,71 +476,90 @@ export function ProfileForm({
             )}
           />
         </FieldGroup>
-        <FieldGroup label="Custom clinical types">
-          <Controller
-            control={control}
-            name="customClinicalExperienceTypes"
-            render={({ field }) => (
-              <TagInput
-                values={field.value ?? []}
-                onChange={field.onChange}
-                placeholder="Add custom clinical roles"
-              />
-            )}
-          />
-        </FieldGroup>
-        <FieldGroup
-          label="Most meaningful clinical role description"
-          error={errors.clinicalRoleDescription?.message}
-        >
-          <Textarea
-            {...register("clinicalRoleDescription")}
-            rows={4}
-            placeholder="Describe your most meaningful clinical role and what you learned."
-          />
-        </FieldGroup>
       </SectionCard>
 
       <SectionCard
         title="Shadowing"
-        description="Schools want to see exposure to physicians, especially some primary care context."
+        description="Purely quantitative shadowing inputs: total hours, physician count, and primary-care exposure."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <FieldGroup label="Total hours" error={errors.shadowingTotalHours?.message}>
-            <Input {...register("shadowingTotalHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Total hours"
+            error={errors.shadowingTotalHours?.message}
+          >
+            <Input
+              {...register("shadowingTotalHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Physicians shadowed" error={errors.physiciansShadowed?.message}>
-            <Input {...register("physiciansShadowed", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Physicians shadowed"
+            error={errors.physiciansShadowed?.message}
+          >
+            <Input
+              {...register("physiciansShadowed", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Primary care hours" error={errors.primaryCareShadowingHours?.message}>
-            <Input {...register("primaryCareShadowingHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Primary care hours"
+            error={errors.primaryCareShadowingHours?.message}
+          >
+            <Input
+              {...register("primaryCareShadowingHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Specialty hours" error={errors.specialtyShadowingHours?.message}>
-            <Input {...register("specialtyShadowingHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Specialty hours"
+            error={errors.specialtyShadowingHours?.message}
+          >
+            <Input
+              {...register("specialtyShadowingHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Virtual hours" error={errors.virtualShadowingHours?.message}>
-            <Input {...register("virtualShadowingHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Virtual hours"
+            error={errors.virtualShadowingHours?.message}
+          >
+            <Input
+              {...register("virtualShadowingHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
         </div>
-        <FieldGroup label="Most meaningful shadowing reflection" error={errors.shadowingReflection?.message}>
-          <Textarea
-            {...register("shadowingReflection")}
-            rows={4}
-            placeholder="Reflect on what shadowing taught you about the physician role."
-          />
-        </FieldGroup>
       </SectionCard>
 
       <SectionCard
         title="Research"
-        description="Research is flexible for many schools, but it matters more for research-heavy lists."
+        description="The model compares time, project count, and outputs. It does not compare research essays."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <FieldGroup label="Total research hours" error={errors.researchHours?.message}>
-            <Input {...register("researchHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Total research hours"
+            error={errors.researchHours?.message}
+          >
+            <Input
+              {...register("researchHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Labs/projects" error={errors.researchProjectsCount?.message}>
-            <Input {...register("researchProjectsCount", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Labs/projects"
+            error={errors.researchProjectsCount?.message}
+          >
+            <Input
+              {...register("researchProjectsCount", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
           <FieldGroup label="Research type" error={errors.researchType?.message}>
             <Controller
@@ -436,44 +574,76 @@ export function ProfileForm({
               )}
             />
           </FieldGroup>
-          <FieldGroup label="Posters/presentations" error={errors.postersPresentationsCount?.message}>
-            <Input {...register("postersPresentationsCount", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Posters/presentations"
+            error={errors.postersPresentationsCount?.message}
+          >
+            <Input
+              {...register("postersPresentationsCount", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Publications" error={errors.publicationsCount?.message}>
-            <Input {...register("publicationsCount", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Publications"
+            error={errors.publicationsCount?.message}
+          >
+            <Input
+              {...register("publicationsCount", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
           <FieldGroup label="Abstracts" error={errors.abstractsCount?.message}>
-            <Input {...register("abstractsCount", numberFieldOptions)} type="number" />
+            <Input
+              {...register("abstractsCount", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
         </div>
-        <FieldGroup label="Most meaningful research contribution" error={errors.researchContribution?.message}>
-          <Textarea
-            {...register("researchContribution")}
-            rows={4}
-            placeholder="Describe the contribution you made and what you learned from it."
-          />
-        </FieldGroup>
       </SectionCard>
 
       <SectionCard
         title="Service"
-        description="Non-clinical service and underserved engagement carry real weight, especially for service-oriented school lists."
+        description="Service scoring is based on hours, underserved exposure, leadership, and category breadth."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <FieldGroup label="Total service hours" error={errors.nonClinicalVolunteerHours?.message}>
-            <Input {...register("nonClinicalVolunteerHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Total service hours"
+            error={errors.nonClinicalVolunteerHours?.message}
+          >
+            <Input
+              {...register("nonClinicalVolunteerHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Underserved hours" error={errors.underservedServiceHours?.message}>
-            <Input {...register("underservedServiceHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Underserved hours"
+            error={errors.underservedServiceHours?.message}
+          >
+            <Input
+              {...register("underservedServiceHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
           <FieldGroup label="Leadership in service roles">
             <label className="flex h-10 items-center gap-3 rounded-xl border border-input px-3">
-              <input type="checkbox" {...register("serviceLeadership")} className="size-4" />
+              <input
+                type="checkbox"
+                {...register("serviceLeadership")}
+                className="size-4"
+              />
               <span className="text-sm">Held leadership in service settings</span>
             </label>
           </FieldGroup>
         </div>
-        <FieldGroup label="Service categories">
+        <FieldGroup
+          label="Service categories"
+          description="Select the service lanes you have meaningful hours in."
+        >
           <Controller
             control={control}
             name="serviceCategories"
@@ -497,40 +667,37 @@ export function ProfileForm({
             )}
           />
         </FieldGroup>
-        <FieldGroup label="Custom service categories">
-          <Controller
-            control={control}
-            name="customServiceCategories"
-            render={({ field }) => (
-              <TagInput
-                values={field.value ?? []}
-                onChange={field.onChange}
-                placeholder="Add custom service areas"
-              />
-            )}
-          />
-        </FieldGroup>
-        <FieldGroup label="Most meaningful service experience" error={errors.serviceExperience?.message}>
-          <Textarea
-            {...register("serviceExperience")}
-            rows={4}
-            placeholder="Describe the service role, who you served, and what mattered most."
-          />
-        </FieldGroup>
       </SectionCard>
 
       <SectionCard
         title="Leadership And Employment"
-        description="Leadership and employment add context for responsibility, initiative, and time management."
+        description="Leadership and work context remain scored, but only through measurable involvement and responsibility."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <FieldGroup label="Leadership hours" error={errors.leadershipHours?.message}>
-            <Input {...register("leadershipHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Leadership hours"
+            error={errors.leadershipHours?.message}
+          >
+            <Input
+              {...register("leadershipHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Leadership roles" error={errors.leadershipRolesCount?.message}>
-            <Input {...register("leadershipRolesCount", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Leadership roles"
+            error={errors.leadershipRolesCount?.message}
+          >
+            <Input
+              {...register("leadershipRolesCount", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Highest leadership level" error={errors.highestLeadershipLevel?.message}>
+          <FieldGroup
+            label="Highest leadership level"
+            error={errors.highestLeadershipLevel?.message}
+          >
             <Controller
               control={control}
               name="highestLeadershipLevel"
@@ -543,104 +710,74 @@ export function ProfileForm({
               )}
             />
           </FieldGroup>
-          <FieldGroup label="Paid non-clinical work hours" error={errors.paidNonClinicalWorkHours?.message}>
-            <Input {...register("paidNonClinicalWorkHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Paid non-clinical work hours"
+            error={errors.paidNonClinicalWorkHours?.message}
+          >
+            <Input
+              {...register("paidNonClinicalWorkHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Paid clinical work hours" error={errors.paidClinicalWorkHours?.message}>
-            <Input {...register("paidClinicalWorkHours", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Paid clinical work hours"
+            error={errors.paidClinicalWorkHours?.message}
+          >
+            <Input
+              {...register("paidClinicalWorkHours", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
           <FieldGroup label="Employment while in school">
             <label className="flex h-10 items-center gap-3 rounded-xl border border-input px-3">
-              <input type="checkbox" {...register("employmentWhileInSchool")} className="size-4" />
+              <input
+                type="checkbox"
+                {...register("employmentWhileInSchool")}
+                className="size-4"
+              />
               <span className="text-sm">Worked while enrolled</span>
             </label>
           </FieldGroup>
           <FieldGroup label="Worked during semesters">
             <label className="flex h-10 items-center gap-3 rounded-xl border border-input px-3">
-              <input type="checkbox" {...register("workedDuringSemesters")} className="size-4" />
+              <input
+                type="checkbox"
+                {...register("workedDuringSemesters")}
+                className="size-4"
+              />
               <span className="text-sm">Worked during active semesters</span>
             </label>
           </FieldGroup>
         </div>
-        <FieldGroup label="Most meaningful leadership role" error={errors.leadershipDescription?.message}>
-          <Textarea {...register("leadershipDescription")} rows={3} />
-        </FieldGroup>
-        <FieldGroup label="Most meaningful job description" error={errors.jobDescription?.message}>
-          <Textarea {...register("jobDescription")} rows={3} />
-        </FieldGroup>
-      </SectionCard>
-
-      <SectionCard
-        title="Extracurriculars"
-        description="Long-term commitments and distinctive interests help the model explain how your profile stands out."
-      >
-        <div className="grid gap-6 md:grid-cols-2">
-          <FieldGroup label="Clubs and organizations">
-            <Controller
-              control={control}
-            name="clubsOrganizations"
-            render={({ field }) => (
-                <TagInput values={field.value ?? []} onChange={field.onChange} placeholder="Pre-med society, AMSA, etc." />
-              )}
-            />
-          </FieldGroup>
-          <FieldGroup label="Hobbies and interests">
-            <Controller
-              control={control}
-            name="hobbiesInterests"
-            render={({ field }) => (
-                <TagInput values={field.value ?? []} onChange={field.onChange} placeholder="Running, cooking, language learning..." />
-              )}
-            />
-          </FieldGroup>
-          <FieldGroup label="Sports">
-            <Controller
-              control={control}
-            name="sports"
-            render={({ field }) => (
-                <TagInput values={field.value ?? []} onChange={field.onChange} placeholder="Club soccer, marathon training..." />
-              )}
-            />
-          </FieldGroup>
-          <FieldGroup label="Creative activities">
-            <Controller
-              control={control}
-            name="creativeActivities"
-            render={({ field }) => (
-                <TagInput values={field.value ?? []} onChange={field.onChange} placeholder="Music, photography, design..." />
-              )}
-            />
-          </FieldGroup>
-          <FieldGroup label="Other long-term commitments">
-            <Controller
-              control={control}
-            name="longTermCommitments"
-            render={({ field }) => (
-                <TagInput values={field.value ?? []} onChange={field.onChange} placeholder="Family caregiving, church leadership..." />
-              )}
-            />
-          </FieldGroup>
-        </div>
-        <FieldGroup label="Distinctiveness factor" error={errors.distinctivenessFactor?.message}>
-          <Textarea {...register("distinctivenessFactor")} rows={3} placeholder="What feels most distinctive about your profile?" />
-        </FieldGroup>
-        <FieldGroup label="Gap year plans" error={errors.gapYearPlans?.message}>
-          <Textarea {...register("gapYearPlans")} rows={3} placeholder="Describe any planned gap year activities or uncertainty." />
-        </FieldGroup>
       </SectionCard>
 
       <SectionCard
         title="Application Readiness"
-        description="This section measures how executable your intended cycle looks right now."
+        description="These are still comparable because the model maps each status to a fixed readiness score."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <FieldGroup label="Planned application cycle" error={errors.plannedApplicationCycle?.message}>
-            <Input {...register("plannedApplicationCycle")} placeholder="2027 cycle" />
+          <FieldGroup
+            label="Planned application cycle"
+            error={errors.plannedApplicationCycle?.message}
+          >
+            <Input {...register("plannedApplicationCycle")} placeholder="2027" />
           </FieldGroup>
-          <FieldGroup label="Planned school list size" error={errors.plannedSchoolListSize?.message}>
-            <Input {...register("plannedSchoolListSize", numberFieldOptions)} type="number" />
+          <FieldGroup
+            label="Planned school list size"
+            error={errors.plannedSchoolListSize?.message}
+          >
+            <Input
+              {...register("plannedSchoolListSize", zeroNumberFieldOptions)}
+              type="number"
+              min={0}
+            />
           </FieldGroup>
-          <FieldGroup label="Interested in" error={errors.applicationInterest?.message}>
+          <FieldGroup
+            label="Interested in"
+            error={errors.applicationInterest?.message}
+          >
             <Controller
               control={control}
               name="applicationInterest"
@@ -666,7 +803,10 @@ export function ProfileForm({
               )}
             />
           </FieldGroup>
-          <FieldGroup label="Personal statement" error={errors.personalStatementReadiness?.message}>
+          <FieldGroup
+            label="Personal statement"
+            error={errors.personalStatementReadiness?.message}
+          >
             <Controller
               control={control}
               name="personalStatementReadiness"
@@ -679,7 +819,10 @@ export function ProfileForm({
               )}
             />
           </FieldGroup>
-          <FieldGroup label="Activities section" error={errors.activitiesReadiness?.message}>
+          <FieldGroup
+            label="Activities section"
+            error={errors.activitiesReadiness?.message}
+          >
             <Controller
               control={control}
               name="activitiesReadiness"
@@ -692,7 +835,10 @@ export function ProfileForm({
               )}
             />
           </FieldGroup>
-          <FieldGroup label="School list" error={errors.schoolListReadiness?.message}>
+          <FieldGroup
+            label="School list"
+            error={errors.schoolListReadiness?.message}
+          >
             <Controller
               control={control}
               name="schoolListReadiness"
@@ -707,18 +853,30 @@ export function ProfileForm({
           </FieldGroup>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          <FieldGroup label="School list preference flags">
+          <FieldGroup label="School-list preference flags">
             <div className="space-y-3 rounded-2xl border border-border/70 bg-background p-4">
               <label className="flex items-center gap-3 text-sm">
-                <input type="checkbox" {...register("researchHeavyPreference")} className="size-4" />
+                <input
+                  type="checkbox"
+                  {...register("researchHeavyPreference")}
+                  className="size-4"
+                />
                 Research-heavy school preference
               </label>
               <label className="flex items-center gap-3 text-sm">
-                <input type="checkbox" {...register("serviceHeavyPreference")} className="size-4" />
+                <input
+                  type="checkbox"
+                  {...register("serviceHeavyPreference")}
+                  className="size-4"
+                />
                 Community/service-heavy school preference
               </label>
               <label className="flex items-center gap-3 text-sm">
-                <input type="checkbox" {...register("stateSchoolPriority")} className="size-4" />
+                <input
+                  type="checkbox"
+                  {...register("stateSchoolPriority")}
+                  className="size-4"
+                />
                 State school priority
               </label>
             </div>
@@ -730,7 +888,8 @@ export function ProfileForm({
         <div>
           <p className="text-sm font-medium">Ready to score this profile?</p>
           <p className="text-sm text-muted-foreground">
-            Saving recalculates the readiness score and gap year estimate.
+            Saving compares your stats against the benchmark targets and updates
+            the gap-year estimate.
           </p>
         </div>
         <Button type="submit" size="lg" disabled={isPending}>
