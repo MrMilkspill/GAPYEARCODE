@@ -58,9 +58,9 @@ export const benchmarkDerivationNotes: BenchmarkDerivationNote[] = [
   {
     category: "Clinical and service",
     currentBands:
-      "Clinical volunteering is benchmarked separately from paid clinical work, and non-clinical service now uses a much higher competitive band.",
+      "Clinical volunteering is benchmarked separately from paid clinical work, with a strong planning band around 150 hours, while non-clinical service uses a strong planning band around 250 hours.",
     rationale:
-      "AAMC's 2025 MD matriculant data reports 717 average community-service hours, while AMCAS explicitly separates volunteer medical/clinical work from paid medical/clinical employment. The app therefore uses a stricter volunteer-first clinical benchmark and a tougher service bar.",
+      "This is an inference from sources, not an official national cutoff. UVA advising suggests roughly 100 to 200 hours of clinical volunteering or work, AMCAS separates volunteer medical/clinical activity from paid medical/clinical employment, and AAMC's 2025 MD matriculant data reports 717 average community-service hours. The app uses those facts to keep the model demanding without treating the matriculant average itself as a minimum target.",
   },
   {
     category: "Shadowing and research",

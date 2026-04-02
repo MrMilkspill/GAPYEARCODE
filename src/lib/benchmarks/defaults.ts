@@ -1,7 +1,7 @@
 import type { BenchmarkConfig } from "@/types/premed";
 
 export const defaultBenchmarkConfig: BenchmarkConfig = {
-  version: "2026.04.3",
+  version: "2026.04.4",
   lastUpdated: "2026-04-02",
   weights: {
     academics: 35,
@@ -23,12 +23,12 @@ export const defaultBenchmarkConfig: BenchmarkConfig = {
       lowGrades: { excellent: 0, strong: 1, moderate: 2, caution: 5 },
     },
     clinicalExposure: {
-      totalHours: { excellent: 500, strong: 300, moderate: 150, minimum: 60 },
+      totalHours: { excellent: 300, strong: 150, moderate: 80, minimum: 40 },
       patientFacingHours: { excellent: 450, strong: 300, moderate: 150, minimum: 50 },
       experienceTypes: { excellent: 4, strong: 3, moderate: 2, minimum: 1 },
     },
     service: {
-      totalHours: { excellent: 650, strong: 350, moderate: 200, minimum: 75 },
+      totalHours: { excellent: 450, strong: 250, moderate: 125, minimum: 50 },
       underservedHours: { excellent: 150, strong: 75, moderate: 40, minimum: 10 },
       categories: { excellent: 4, strong: 3, moderate: 2, minimum: 1 },
     },

@@ -29,7 +29,8 @@ export default function SourcesPage() {
               bands, not claims that every school uses the same hard minimum. In
               this stricter version, paid clinical work is tracked separately from
               core clinical volunteer hours, and service bands are pushed much
-              closer to the national community-service context in recent AAMC data.
+              closer to recent AAMC community-service context without treating the
+              full matriculant average as a required minimum.
             </p>
           </div>
 
