@@ -21,8 +21,9 @@ async function main() {
 
   await db.benchmarkConfig.create({
     data: {
-      name: "default-2026-04",
-      description: "Default scoring weights and thresholds for the product scaffold.",
+      name: `default-${defaultBenchmarkConfig.version}`,
+      description:
+        "Default scoring weights and thresholds anchored to current AAMC and AACOM reference data.",
       isActive: true,
       config: defaultBenchmarkConfig as unknown as Prisma.InputJsonValue,
     },

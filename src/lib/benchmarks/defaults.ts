@@ -1,7 +1,7 @@
 import type { BenchmarkConfig } from "@/types/premed";
 
 export const defaultBenchmarkConfig: BenchmarkConfig = {
-  version: "2026.04",
+  version: "2026.04.1",
   lastUpdated: "2026-04-02",
   weights: {
     academics: 35,
@@ -91,10 +91,10 @@ export const defaultBenchmarkConfig: BenchmarkConfig = {
     strongServiceLeadershipOffset: 2,
     researchHeavyWeightShift: 5,
     serviceHeavyWeightShift: 5,
-    doGpaShift: 0.05,
-    doScienceGpaShift: 0.05,
-    doMcatShift: 1,
-    doOverallLift: 3,
+    doGpaShift: 0.08,
+    doScienceGpaShift: 0.08,
+    doMcatShift: 7,
+    doOverallLift: 4,
     noGapThreshold: 75,
     oneGapThreshold: 58,
     noGapAcademicFloor: 70,

@@ -1,6 +1,9 @@
+import Link from "next/link";
+
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { defaultBenchmarkConfig } from "@/lib/benchmarks/defaults";
+import { benchmarkMethodNotes } from "@/lib/benchmarks/sources";
 
 const benchmarkRows = [
   ["Cumulative GPA", "3.80+ excellent, 3.65+ strong, 3.45+ moderate"],
@@ -30,6 +33,18 @@ export default function AboutPage() {
               readiness against typical U.S. applicant expectations, but medical
               school admissions remain holistic, school-specific, and human.
             </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/sources"
+                className="inline-flex items-center rounded-full border border-border/70 px-4 py-2 text-sm font-medium transition hover:border-primary/50 hover:bg-muted/70"
+              >
+                View source list
+              </Link>
+              <p className="self-center text-sm text-muted-foreground">
+                Benchmark version {defaultBenchmarkConfig.version} · updated{" "}
+                {defaultBenchmarkConfig.lastUpdated}
+              </p>
+            </div>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
@@ -70,9 +85,25 @@ export default function AboutPage() {
             </Card>
           </div>
 
+          <div className="grid gap-6 md:grid-cols-3">
+            {benchmarkMethodNotes.map((note) => (
+              <Card
+                key={note.title}
+                className="border-border/70 bg-card/95 shadow-sm"
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">{note.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm leading-6 text-muted-foreground">
+                  {note.detail}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
           <Card className="border-border/70 bg-card/95 shadow-sm">
             <CardHeader>
-              <CardTitle>Default benchmark references</CardTitle>
+              <CardTitle>Current reference bands</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {benchmarkRows.map(([label, detail]) => (
@@ -84,6 +115,11 @@ export default function AboutPage() {
                   <p className="text-sm text-muted-foreground">{detail}</p>
                 </div>
               ))}
+              <p className="rounded-2xl bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
+                These bands are source-backed planning cutoffs, not claims about a
+                single universal admissions minimum. The full AAMC, AACOM, and
+                university-advising source list is on the Sources page.
+              </p>
             </CardContent>
           </Card>
         </div>

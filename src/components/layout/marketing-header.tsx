@@ -23,6 +23,9 @@ export function MarketingHeader() {
           <Link href="/founder" className={cn(buttonVariants({ variant: "ghost" }))}>
             Founder
           </Link>
+          <Link href="/sources" className={cn(buttonVariants({ variant: "ghost" }))}>
+            Sources
+          </Link>
           <Link href="/about" className={cn(buttonVariants({ variant: "ghost" }))}>
             Methodology
           </Link>

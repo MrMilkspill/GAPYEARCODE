@@ -15,7 +15,16 @@ export async function getActiveBenchmarkConfig(): Promise<BenchmarkConfig> {
     return defaultBenchmarkConfig;
   }
 
-  return parseBenchmarkConfigRecord(config);
+  const parsedConfig = parseBenchmarkConfigRecord(config);
+
+  if (
+    config.name.startsWith("default-") &&
+    parsedConfig.version !== defaultBenchmarkConfig.version
+  ) {
+    return defaultBenchmarkConfig;
+  }
+
+  return parsedConfig;
 }
 
 export function parseBenchmarkConfigRecord(

@@ -196,6 +196,7 @@ export const dashboardNavigation = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/profiles/new", label: "New Profile" },
   { href: "/founder", label: "Founder" },
+  { href: "/sources", label: "Sources" },
   { href: "/about", label: "Methodology" },
 ] as const;
 

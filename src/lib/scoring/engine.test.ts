@@ -14,15 +14,31 @@ describe("calculateProfileReadiness", () => {
     expect(result.competitivenessTier).toMatch(/VERY_STRONG|STRONG/);
   });
 
-  it("flags the weakest sample as needing a longer runway", () => {
+  it("still flags the weakest sample as needing a meaningful runway", () => {
     const result = calculateProfileReadiness(
       sampleProfiles[2],
       defaultBenchmarkConfig,
     );
 
     expect(result.overallScore).toBeLessThan(60);
-    expect(result.gapYearPrediction).toBe("TWO_PLUS_GAPS");
-    expect(result.categoryScores.academics).toBeLessThan(55);
+    expect(result.gapYearPrediction).toBe("ONE_GAP");
+    expect(result.categoryScores.applicationReadiness).toBeLessThan(50);
+    expect(result.categoryScores.service).toBeLessThan(50);
+  });
+
+  it("interprets the same weaker profile more leniently for DO than MD", () => {
+    const doProfile = sampleProfiles[2];
+    const mdProfile = {
+      ...sampleProfiles[2],
+      applicationInterest: "MD" as const,
+    };
+
+    const doResult = calculateProfileReadiness(doProfile, defaultBenchmarkConfig);
+    const mdResult = calculateProfileReadiness(mdProfile, defaultBenchmarkConfig);
+
+    expect(doResult.overallScore).toBeGreaterThan(mdResult.overallScore);
+    expect(doResult.gapYearPrediction).toBe("ONE_GAP");
+    expect(mdResult.gapYearPrediction).toBe("TWO_PLUS_GAPS");
   });
 
   it("does not change the score when only narrative text fields change", () => {
