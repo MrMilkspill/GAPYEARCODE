@@ -1,10 +1,11 @@
 import type { BenchmarkConfig as BenchmarkConfigRecord } from "@prisma/client";
 
 import { defaultBenchmarkConfig } from "@/lib/benchmarks/defaults";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import type { BenchmarkConfig } from "@/types/premed";
 
 export async function getActiveBenchmarkConfig(): Promise<BenchmarkConfig> {
+  const db = getDb();
   const config = await db.benchmarkConfig.findFirst({
     where: { isActive: true },
     orderBy: { updatedAt: "desc" },

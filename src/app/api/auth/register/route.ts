@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { registerSchema } from "@/lib/validation/auth";
 
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     }
 
     const email = parsed.data.email.toLowerCase();
+    const db = getDb();
 
     const existingUser = await db.user.findUnique({
       where: { email },

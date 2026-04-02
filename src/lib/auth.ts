@@ -2,7 +2,7 @@ import { compare, hash } from "bcryptjs";
 import { getServerSession, type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { signInSchema } from "@/lib/validation/auth";
 
 export const authOptions: NextAuthOptions = {
@@ -26,6 +26,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const db = getDb();
         const user = await db.user.findUnique({
           where: { email: parsed.data.email.toLowerCase() },
         });
@@ -78,6 +79,7 @@ export async function getSessionUser() {
     return null;
   }
 
+  const db = getDb();
   return db.user.findUnique({
     where: { id: session.user.id },
     select: {

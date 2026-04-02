@@ -3,12 +3,13 @@ import "dotenv/config";
 import type { Prisma } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { defaultBenchmarkConfig } from "../src/lib/benchmarks/defaults";
-import { db } from "../src/lib/db";
+import { getDb } from "../src/lib/db";
 import { createProfileRecord } from "../src/lib/profiles/repository";
 import { calculateProfileReadiness } from "../src/lib/scoring/engine";
 import { sampleProfiles } from "../src/lib/sample-profiles";
 
 async function main() {
+  const db = getDb();
   await db.scoreResult.deleteMany();
   await db.premedProfile.deleteMany();
   await db.benchmarkConfig.deleteMany();
@@ -50,5 +51,6 @@ main()
     process.exit(1);
   })
   .finally(async () => {
+    const db = getDb();
     await db.$disconnect();
   });

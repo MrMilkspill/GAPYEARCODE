@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import type { PremedProfileInput } from "@/lib/validation/premed-profile";
 import type { ScoreComputation } from "@/types/premed";
 
@@ -30,6 +30,7 @@ function scoreResultData(result: ScoreComputation) {
 }
 
 export async function listProfilesForUser(userId: string) {
+  const db = getDb();
   return db.premedProfile.findMany({
     where: { userId },
     include: profileInclude,
@@ -38,6 +39,7 @@ export async function listProfilesForUser(userId: string) {
 }
 
 export async function getProfileForUser(userId: string, profileId: string) {
+  const db = getDb();
   return db.premedProfile.findFirst({
     where: { id: profileId, userId },
     include: profileInclude,
@@ -49,6 +51,7 @@ export async function createProfileRecord(
   profile: PremedProfileInput,
   result: ScoreComputation,
 ) {
+  const db = getDb();
   return db.premedProfile.create({
     data: {
       userId,
@@ -67,6 +70,7 @@ export async function updateProfileRecord(
   profile: PremedProfileInput,
   result: ScoreComputation,
 ) {
+  const db = getDb();
   const existing = await db.premedProfile.findFirst({
     where: { id: profileId, userId },
     select: { id: true, scoreResult: { select: { id: true } } },
@@ -93,6 +97,7 @@ export async function updateProfileRecord(
 }
 
 export async function deleteProfileRecord(userId: string, profileId: string) {
+  const db = getDb();
   const existing = await db.premedProfile.findFirst({
     where: { id: profileId, userId },
     select: { id: true },
