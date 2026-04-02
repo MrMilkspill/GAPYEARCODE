@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ArrowRight,
   Compass,
@@ -12,7 +13,16 @@ import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { defaultBenchmarkConfig } from "@/lib/benchmarks/defaults";
+import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: siteConfig.name,
+  description: siteConfig.description,
+  alternates: {
+    canonical: "/",
+  },
+};
 
 const featureCards = [
   {

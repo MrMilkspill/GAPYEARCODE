@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthPanel } from "@/components/auth/auth-panel";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { getSessionUser } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "Login",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function LoginPage() {
   const user = await getSessionUser();
