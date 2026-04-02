@@ -49,7 +49,22 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ user }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("Registration failed.", error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("DATABASE_URL is required")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Registration is unavailable because the database is not configured.",
+        },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Unable to process registration right now." },
       { status: 500 },
