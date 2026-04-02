@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: premed-gap-year-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: premed_gap_year_predictor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - premed-gap-year-postgres:/var/lib/postgresql/data
+
+volumes:
+  premed-gap-year-postgres:

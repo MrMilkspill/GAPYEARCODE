@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CurrentYear {
+  FRESHMAN
+  SOPHOMORE
+  JUNIOR
+  SENIOR
+  GRADUATE
+  POST_BACC
+}
+
+enum SchoolRigor {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ResearchType {
+  BASIC_SCIENCE
+  CLINICAL
+  TRANSLATIONAL
+  PUBLIC_HEALTH
+  OTHER
+}
+
+enum HighestLeadershipLevel {
+  MEMBER
+  COMMITTEE
+  CHAIR
+  VICE_PRESIDENT
+  PRESIDENT
+  FOUNDER
+}
+
+enum ApplicationInterest {
+  MD
+  DO
+  BOTH
+}
+
+enum LetterStrength {
+  WEAK
+  AVERAGE
+  STRONG
+}
+
+enum PersonalStatementStatus {
+  NOT_STARTED
+  DRAFTING
+  STRONG_DRAFT
+  FINALIZED
+}
+
+enum ActivitiesStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  READY
+}
+
+enum SchoolListStatus {
+  NOT_STARTED
+  DRAFTED
+  FINALIZED
+}
+
+enum CompetitivenessTier {
+  VERY_STRONG
+  STRONG
+  BORDERLINE
+  NEEDS_IMPROVEMENT
+}
+
+enum GapYearRecommendation {
+  NO_GAP
+  ONE_GAP
+  TWO_PLUS_GAPS
+}
+
+enum ConfidenceLevel {
+  LOW
+  MODERATE
+  HIGH
+}
+
+model User {
+  id           String         @id @default(cuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  profiles     PremedProfile[]
+}
+
+model PremedProfile {
+  id                            String                  @id @default(cuid())
+  userId                        String
+  fullName                      String
+  email                         String
+  stateOfResidence              String
+  collegeName                   String
+  graduationYear                Int
+  currentYear                   CurrentYear
+  major                         String
+  minor                         String?
+  honorsProgram                 Boolean
+  cumulativeGpa                 Float
+  scienceGpa                    Float
+  mcatTotal                     Int
+  mcatChemPhys                  Int
+  mcatCars                      Int
+  mcatBioBiochem                Int
+  mcatPsychSoc                  Int
+  numberOfWithdrawals           Int
+  numberOfCsOrLower             Int
+  upwardGradeTrend              Boolean
+  schoolRigor                   SchoolRigor
+  paidClinicalHours             Int
+  clinicalVolunteerHours        Int
+  patientFacingHours            Int
+  clinicalExperienceTypes       String[]
+  customClinicalExperienceTypes String[]
+  clinicalRoleDescription       String
+  shadowingTotalHours           Int
+  physiciansShadowed            Int
+  primaryCareShadowingHours     Int
+  specialtyShadowingHours       Int
+  virtualShadowingHours         Int
+  shadowingReflection           String
+  researchHours                 Int
+  researchProjectsCount         Int
+  researchType                  ResearchType
+  postersPresentationsCount     Int
+  publicationsCount             Int
+  abstractsCount                Int
+  researchContribution          String
+  nonClinicalVolunteerHours     Int
+  underservedServiceHours       Int
+  serviceLeadership             Boolean
+  serviceCategories             String[]
+  customServiceCategories       String[]
+  serviceExperience             String
+  leadershipHours               Int
+  leadershipRolesCount          Int
+  highestLeadershipLevel        HighestLeadershipLevel
+  leadershipDescription         String
+  paidNonClinicalWorkHours      Int
+  paidClinicalWorkHours         Int
+  employmentWhileInSchool       Boolean
+  workedDuringSemesters         Boolean
+  jobDescription                String
+  clubsOrganizations            String[]
+  hobbiesInterests              String[]
+  sports                        String[]
+  creativeActivities            String[]
+  longTermCommitments           String[]
+  distinctivenessFactor         String
+  gapYearPlans                  String?
+  plannedApplicationCycle       String
+  plannedSchoolListSize         Int
+  applicationInterest           ApplicationInterest
+  researchHeavyPreference       Boolean
+  serviceHeavyPreference        Boolean
+  stateSchoolPriority           Boolean
+  letterStrength                LetterStrength
+  personalStatementReadiness    PersonalStatementStatus
+  activitiesReadiness           ActivitiesStatus
+  schoolListReadiness           SchoolListStatus
+  createdAt                     DateTime                @default(now())
+  updatedAt                     DateTime                @updatedAt
+  user                          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scoreResult                   ScoreResult?
+
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model ScoreResult {
+  id                  String                @id @default(cuid())
+  profileId           String                @unique
+  overallScore        Float
+  rawWeightedScore    Float
+  contextAdjustment   Float
+  competitivenessTier CompetitivenessTier
+  gapYearPrediction   GapYearRecommendation
+  confidenceLevel     ConfidenceLevel
+  explanation         String
+  strengths           String[]
+  weaknesses          String[]
+  disclaimers         String[]
+  categoryBreakdown   Json
+  categoryScores      Json
+  dynamicWeights      Json
+  comparisonMetrics   Json
+  improvementPlan     Json
+  narrative           Json
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  profile             PremedProfile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([overallScore])
+}
+
+model BenchmarkConfig {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  config      Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

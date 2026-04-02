@@ -1,0 +1,107 @@
+import type { BenchmarkConfig } from "@/types/premed";
+
+export const defaultBenchmarkConfig: BenchmarkConfig = {
+  version: "2026.04",
+  lastUpdated: "2026-04-02",
+  weights: {
+    academics: 35,
+    clinicalExposure: 20,
+    service: 15,
+    research: 10,
+    shadowing: 5,
+    leadership: 5,
+    employmentContext: 5,
+    applicationReadiness: 5,
+  },
+  thresholds: {
+    academics: {
+      cumulativeGpa: { excellent: 3.8, strong: 3.65, moderate: 3.45, minimum: 3.2 },
+      scienceGpa: { excellent: 3.75, strong: 3.6, moderate: 3.4, minimum: 3.15 },
+      mcatTotal: { excellent: 515, strong: 510, moderate: 505, minimum: 500 },
+      mcatSectionFloor: { excellent: 128, strong: 127, moderate: 125, minimum: 124 },
+      withdrawals: { excellent: 0, strong: 1, moderate: 2, caution: 4 },
+      lowGrades: { excellent: 0, strong: 1, moderate: 2, caution: 5 },
+    },
+    clinicalExposure: {
+      totalHours: { excellent: 500, strong: 300, moderate: 150, minimum: 60 },
+      patientFacingHours: { excellent: 450, strong: 300, moderate: 150, minimum: 50 },
+      experienceTypes: { excellent: 4, strong: 3, moderate: 2, minimum: 1 },
+    },
+    service: {
+      totalHours: { excellent: 250, strong: 150, moderate: 75, minimum: 30 },
+      underservedHours: { excellent: 150, strong: 75, moderate: 40, minimum: 10 },
+      categories: { excellent: 4, strong: 3, moderate: 2, minimum: 1 },
+    },
+    research: {
+      hours: { excellent: 450, strong: 300, moderate: 150, minimum: 50 },
+      projects: { excellent: 3, strong: 2, moderate: 1, minimum: 1 },
+      outputs: { excellent: 4, strong: 2, moderate: 1, minimum: 0 },
+    },
+    shadowing: {
+      totalHours: { excellent: 80, strong: 40, moderate: 20, minimum: 8 },
+      physicians: { excellent: 4, strong: 2, moderate: 1, minimum: 1 },
+      primaryCareHours: { excellent: 20, strong: 10, moderate: 5, minimum: 0 },
+    },
+    leadership: {
+      hours: { excellent: 250, strong: 150, moderate: 75, minimum: 25 },
+      roles: { excellent: 3, strong: 2, moderate: 1, minimum: 1 },
+      levelScores: {
+        MEMBER: 35,
+        COMMITTEE: 50,
+        CHAIR: 70,
+        VICE_PRESIDENT: 80,
+        PRESIDENT: 90,
+        FOUNDER: 95,
+      },
+    },
+    employmentContext: {
+      totalHours: { excellent: 1200, strong: 600, moderate: 250, minimum: 80 },
+      paidClinicalHours: { excellent: 500, strong: 250, moderate: 100, minimum: 0 },
+    },
+    applicationReadiness: {
+      letterStrengthScores: {
+        WEAK: 40,
+        AVERAGE: 70,
+        STRONG: 95,
+      },
+      personalStatementScores: {
+        NOT_STARTED: 25,
+        DRAFTING: 55,
+        STRONG_DRAFT: 80,
+        FINALIZED: 100,
+      },
+      activitiesScores: {
+        NOT_STARTED: 25,
+        IN_PROGRESS: 65,
+        READY: 100,
+      },
+      schoolListScores: {
+        NOT_STARTED: 20,
+        DRAFTED: 65,
+        FINALIZED: 100,
+      },
+    },
+  },
+  adjustments: {
+    upwardTrendBonus: 2.5,
+    highRigorBonus: 2,
+    honorsBonus: 1.5,
+    workedDuringSchoolBonus: 2,
+    employmentDuringSchoolBonus: 1.5,
+    strongServiceLeadershipOffset: 2,
+    researchHeavyWeightShift: 5,
+    serviceHeavyWeightShift: 5,
+    doGpaShift: 0.05,
+    doScienceGpaShift: 0.05,
+    doMcatShift: 1,
+    doOverallLift: 3,
+    noGapThreshold: 75,
+    oneGapThreshold: 58,
+    noGapAcademicFloor: 70,
+    noGapClinicalFloor: 65,
+    noGapServiceFloor: 55,
+    noGapShadowingFloor: 50,
+    highConfidenceMargin: 8,
+    lowConfidenceMargin: 4,
+  },
+};
