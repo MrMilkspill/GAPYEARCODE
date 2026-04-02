@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { BenchmarkRadarChart } from "@/components/dashboard/benchmark-radar-chart";
+import { DeleteProfileButton } from "@/components/dashboard/delete-profile-button";
 import { ReadinessGauge } from "@/components/dashboard/readiness-gauge";
 import { SummaryMetricCard } from "@/components/dashboard/summary-metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -210,6 +211,10 @@ export default async function DashboardPage() {
                         >
                           Edit
                         </Link>
+                        <DeleteProfileButton
+                          profileId={profile.id}
+                          profileName={profile.fullName}
+                        />
                       </div>
                     </td>
                   </tr>
