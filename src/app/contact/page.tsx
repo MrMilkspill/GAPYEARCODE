@@ -82,6 +82,10 @@ export default function ContactPage() {
                   <Mail className="size-4 text-primary" />
                   sharma.1255@buckeyemail.osu.edu
                 </Link>
+                <p className="text-sm text-muted-foreground">
+                  Special thanks to Tejas Naik for helping me come up with the
+                  idea for this project.
+                </p>
               </CardContent>
             </Card>
           </div>
