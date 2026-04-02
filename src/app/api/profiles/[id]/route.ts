@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { getSessionUser } from "@/lib/auth";
+import { getActiveBenchmarkConfig } from "@/lib/benchmarks/service";
 import {
   deleteProfileRecord,
   getProfileForUser,
 } from "@/lib/profiles/repository";
-import { updateProfileForUser } from "@/lib/profiles/service";
+import { buildProfileSubmission, updateProfileForUser } from "@/lib/profiles/service";
 
 type RouteContext = {
   params: {
@@ -26,7 +27,13 @@ export async function GET(_: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Profile not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ profile });
+  const benchmarks = await getActiveBenchmarkConfig();
+  const rescoredProfile = {
+    ...profile,
+    scoreResult: buildProfileSubmission(profile, benchmarks).result,
+  };
+
+  return NextResponse.json({ profile: rescoredProfile });
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {

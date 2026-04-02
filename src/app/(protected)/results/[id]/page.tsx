@@ -22,11 +22,14 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getSessionUser } from "@/lib/auth";
+import { getActiveBenchmarkConfig } from "@/lib/benchmarks/service";
+import {
+  buildProfileSubmission,
+} from "@/lib/profiles/service";
 import {
   competitivenessTierLabels,
   confidenceLevelLabels,
   gapYearPredictionLabels,
-  hydrateScoreResult,
 } from "@/lib/result";
 import { getProfileForUser } from "@/lib/profiles/repository";
 import { cn } from "@/lib/utils";
@@ -45,11 +48,13 @@ export default async function ResultPage({ params }: ResultPageProps) {
   }
 
   const profile = await getProfileForUser(user.id, params.id);
-  const score = hydrateScoreResult(profile?.scoreResult ?? null);
 
-  if (!profile || !score) {
+  if (!profile) {
     notFound();
   }
+
+  const benchmarks = await getActiveBenchmarkConfig();
+  const score = buildProfileSubmission(profile, benchmarks).result;
 
   const clinicalHours =
     profile.paidClinicalHours + profile.clinicalVolunteerHours;

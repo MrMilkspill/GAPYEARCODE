@@ -19,10 +19,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { getSessionUser } from "@/lib/auth";
+import { getActiveBenchmarkConfig } from "@/lib/benchmarks/service";
+import { buildProfileSubmission } from "@/lib/profiles/service";
 import {
   competitivenessTierLabels,
   gapYearPredictionLabels,
-  hydrateScoreResult,
 } from "@/lib/result";
 import { listProfilesForUser } from "@/lib/profiles/repository";
 import { cn } from "@/lib/utils";
@@ -35,8 +36,14 @@ export default async function DashboardPage() {
   }
 
   const profiles = await listProfilesForUser(user.id);
-  const latestProfile = profiles[0];
-  const latestScore = hydrateScoreResult(latestProfile?.scoreResult ?? null);
+  const benchmarks = await getActiveBenchmarkConfig();
+  const scoredProfiles = profiles.map((profile) => ({
+    profile,
+    score: buildProfileSubmission(profile, benchmarks).result,
+  }));
+  const latestEntry = scoredProfiles[0];
+  const latestProfile = latestEntry?.profile;
+  const latestScore = latestEntry?.score;
 
   if (!latestProfile || !latestScore) {
     return (
@@ -173,53 +180,49 @@ export default async function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {profiles.map((profile) => {
-                const score = hydrateScoreResult(profile.scoreResult);
-
-                return (
-                  <tr key={profile.id} className="border-b border-border/50 last:border-0">
-                    <td className="px-4 py-4">
-                      <div>
-                        <p className="font-medium">{profile.fullName}</p>
-                        <p className="text-xs text-muted-foreground">{profile.collegeName}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">{profile.plannedApplicationCycle}</td>
-                    <td className="px-4 py-4">{score ? Math.round(score.overallScore) : "N/A"}</td>
-                    <td className="px-4 py-4">
-                      {score ? gapYearPredictionLabels[score.gapYearPrediction] : "N/A"}
-                    </td>
-                    <td className="px-4 py-4">
-                      {new Intl.DateTimeFormat("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      }).format(profile.updatedAt)}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          href={`/results/${profile.id}`}
-                          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                        >
-                          <Eye className="size-4" />
-                          Results
-                        </Link>
-                        <Link
-                          href={`/profiles/${profile.id}/edit`}
-                          className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-                        >
-                          Edit
-                        </Link>
-                        <DeleteProfileButton
-                          profileId={profile.id}
-                          profileName={profile.fullName}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {scoredProfiles.map(({ profile, score }) => (
+                <tr key={profile.id} className="border-b border-border/50 last:border-0">
+                  <td className="px-4 py-4">
+                    <div>
+                      <p className="font-medium">{profile.fullName}</p>
+                      <p className="text-xs text-muted-foreground">{profile.collegeName}</p>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">{profile.plannedApplicationCycle}</td>
+                  <td className="px-4 py-4">{Math.round(score.overallScore)}</td>
+                  <td className="px-4 py-4">
+                    {gapYearPredictionLabels[score.gapYearPrediction]}
+                  </td>
+                  <td className="px-4 py-4">
+                    {new Intl.DateTimeFormat("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }).format(profile.updatedAt)}
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/results/${profile.id}`}
+                        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                      >
+                        <Eye className="size-4" />
+                        Results
+                      </Link>
+                      <Link
+                        href={`/profiles/${profile.id}/edit`}
+                        className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                      >
+                        Edit
+                      </Link>
+                      <DeleteProfileButton
+                        profileId={profile.id}
+                        profileName={profile.fullName}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </CardContent>

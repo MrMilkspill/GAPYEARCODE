@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { getSessionUser } from "@/lib/auth";
+import { getActiveBenchmarkConfig } from "@/lib/benchmarks/service";
 import { listProfilesForUser } from "@/lib/profiles/repository";
-import { createProfileForUser } from "@/lib/profiles/service";
+import { buildProfileSubmission, createProfileForUser } from "@/lib/profiles/service";
 
 export async function GET() {
   const user = await getSessionUser();
@@ -12,7 +13,12 @@ export async function GET() {
   }
 
   const profiles = await listProfilesForUser(user.id);
-  return NextResponse.json({ profiles });
+  const benchmarks = await getActiveBenchmarkConfig();
+  const rescoredProfiles = profiles.map((profile) => ({
+    ...profile,
+    scoreResult: buildProfileSubmission(profile, benchmarks).result,
+  }));
+  return NextResponse.json({ profiles: rescoredProfiles });
 }
 
 export async function POST(request: Request) {
