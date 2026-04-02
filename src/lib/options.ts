@@ -195,6 +195,7 @@ export const serviceCategoryOptions = [
 export const dashboardNavigation = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/profiles/new", label: "New Profile" },
+  { href: "/founder", label: "Founder" },
   { href: "/about", label: "Methodology" },
 ] as const;
 

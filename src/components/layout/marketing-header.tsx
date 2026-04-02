@@ -20,6 +20,9 @@ export function MarketingHeader() {
           </div>
         </Link>
         <div className="flex items-center gap-2">
+          <Link href="/founder" className={cn(buttonVariants({ variant: "ghost" }))}>
+            Founder
+          </Link>
           <Link href="/about" className={cn(buttonVariants({ variant: "ghost" }))}>
             Methodology
           </Link>
