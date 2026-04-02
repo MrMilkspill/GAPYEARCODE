@@ -461,11 +461,12 @@ export function ProfileForm({
 
       <SectionCard
         title="Clinical Exposure"
-        description="Hours and role breadth are scored here. Blank hour fields save as 0."
+        description="This stricter model uses clinical volunteer hours as the core clinical benchmark. Paid clinical work is still helpful, but only as contextual support."
       >
         <div className="grid gap-4 md:grid-cols-2">
           <FieldGroup
             label="Paid clinical hours"
+            description="Helpful context only. These hours do not get added to the core clinical-hour benchmark."
             error={errors.paidClinicalHours?.message}
           >
             <Input
@@ -476,6 +477,7 @@ export function ProfileForm({
           </FieldGroup>
           <FieldGroup
             label="Clinical volunteer hours"
+            description="This is the clinical hour count used in the core readiness score."
             error={errors.clinicalVolunteerHours?.message}
           >
             <Input
@@ -667,7 +669,7 @@ export function ProfileForm({
 
       <SectionCard
         title="Service"
-        description="Service scoring is based on total hours, leadership, and category breadth."
+        description="Service scoring is intentionally strict and expects substantial long-term non-clinical community engagement."
       >
         <div className="grid gap-4 md:grid-cols-2">
           <FieldGroup

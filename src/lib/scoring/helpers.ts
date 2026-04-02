@@ -34,20 +34,20 @@ export function scoreFromThresholds(value: number, range: BenchmarkRange) {
     return 100;
   }
   if (value >= range.strong) {
-    return interpolate(value, range.strong, range.excellent, 85, 100);
+    return interpolate(value, range.strong, range.excellent, 74, 90);
   }
   if (value >= range.moderate) {
-    return interpolate(value, range.moderate, range.strong, 65, 85);
+    return interpolate(value, range.moderate, range.strong, 52, 74);
   }
   if (value >= range.minimum) {
-    return interpolate(value, range.minimum, range.moderate, 40, 65);
+    return interpolate(value, range.minimum, range.moderate, 28, 52);
   }
 
   if (range.minimum === 0) {
-    return clamp(interpolate(value, 0, 1, 15, 35), 15, 35);
+    return clamp(interpolate(value, 0, 1, 8, 22), 8, 22);
   }
 
-  return clamp(interpolate(value, 0, range.minimum, 15, 40), 10, 40);
+  return clamp(interpolate(value, 0, range.minimum, 8, 28), 8, 28);
 }
 
 export function scoreLowerIsBetter(value: number, range: LowerIsBetterRange) {
@@ -55,16 +55,16 @@ export function scoreLowerIsBetter(value: number, range: LowerIsBetterRange) {
     return 100;
   }
   if (value <= range.strong) {
-    return interpolate(value, range.excellent, range.strong, 100, 85);
+    return interpolate(value, range.excellent, range.strong, 100, 90);
   }
   if (value <= range.moderate) {
-    return interpolate(value, range.strong, range.moderate, 85, 65);
+    return interpolate(value, range.strong, range.moderate, 90, 72);
   }
   if (value <= range.caution) {
-    return interpolate(value, range.moderate, range.caution, 65, 35);
+    return interpolate(value, range.moderate, range.caution, 72, 38);
   }
 
-  return 20;
+  return 18;
 }
 
 export function weightedAverage(

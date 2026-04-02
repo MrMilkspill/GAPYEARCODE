@@ -222,37 +222,34 @@ function evaluateClinicalExposure(
   profile: PremedProfileInput,
   config: BenchmarkConfig,
 ): CategoryEvaluation {
-  const clinicalHours =
-    profile.paidClinicalHours + profile.clinicalVolunteerHours;
+  const clinicalVolunteerHours = profile.clinicalVolunteerHours;
   const typesCount = countUnique([
     ...profile.clinicalExperienceTypes,
     ...profile.customClinicalExperienceTypes,
   ]);
   const totalHoursScore = scoreFromThresholds(
-    clinicalHours,
+    clinicalVolunteerHours,
     config.thresholds.clinicalExposure.totalHours,
   );
   const typesScore = scoreFromThresholds(
     typesCount,
     config.thresholds.clinicalExposure.experienceTypes,
   );
-  const mixBonus =
-    profile.paidClinicalHours > 0 && profile.clinicalVolunteerHours > 0 ? 4 : 0;
 
   return {
     score: clamp(
       weightedAverage([
-        { score: totalHoursScore, weight: 80 },
-        { score: typesScore, weight: 20 },
-      ]) + mixBonus,
+        { score: totalHoursScore, weight: 85 },
+        { score: typesScore, weight: 15 },
+      ]),
     ),
-    benchmarkTarget: 75,
+    benchmarkTarget: 72,
     highlights: [
-      `${clinicalHours} combined clinical hours drive this category.`,
+      `${clinicalVolunteerHours} clinical volunteer hours drive the core clinical benchmark in this model.`,
       `${typesCount || 0} distinct clinical role type${typesCount === 1 ? "" : "s"} broadens the narrative.`,
-      mixBonus
-        ? "Having both paid and volunteer clinical exposure strengthens consistency."
-        : "A mix of paid and volunteer clinical work would make the clinical story more rounded.",
+      profile.paidClinicalHours > 0
+        ? `${profile.paidClinicalHours} paid clinical hours are still favorable context, but they are scored separately and do not count toward the core clinical-hour benchmark.`
+        : "Paid clinical work is optional context here, but it is not used to inflate the core clinical-hour benchmark.",
     ],
   };
 }
@@ -282,13 +279,13 @@ function evaluateService(
         { score: categoriesScore, weight: 20 },
       ]) + leadershipBonus,
     ),
-    benchmarkTarget: 72,
+    benchmarkTarget: 78,
     highlights: [
       `${profile.nonClinicalVolunteerHours} non-clinical service hours set the baseline here.`,
       profile.serviceLeadership
         ? "Holding leadership in service roles adds depth beyond one-time service."
         : "Leadership within service work would raise this category further.",
-      `${categoriesCount || 0} service category${categoriesCount === 1 ? "" : "ies"} shows the breadth of community engagement.`,
+      `${categoriesCount || 0} service category${categoriesCount === 1 ? "" : "ies"} shows the breadth of community engagement, but the hour bar is intentionally high because current AAMC matriculants report far more service on average.`,
     ],
   };
 }
@@ -529,10 +526,17 @@ function buildComparisonMetrics(
       "score",
     ),
     createComparisonMetric(
-      "clinicalHours",
-      "Clinical hours",
-      profile.paidClinicalHours + profile.clinicalVolunteerHours,
+      "clinicalVolunteerHours",
+      "Clinical volunteer hours",
+      profile.clinicalVolunteerHours,
       config.thresholds.clinicalExposure.totalHours.strong,
+      "hours",
+    ),
+    createComparisonMetric(
+      "paidClinicalHours",
+      "Paid clinical work",
+      profile.paidClinicalHours,
+      config.thresholds.employmentContext.paidClinicalHours.strong,
       "hours",
     ),
     createComparisonMetric(
@@ -612,15 +616,15 @@ function buildImprovementPlan(
   const suggestions: ImprovementSuggestion[] = [];
 
   const clinicalMetric = comparisonMetrics.find(
-    (metric) => metric.key === "clinicalHours",
+    (metric) => metric.key === "clinicalVolunteerHours",
   );
   if (clinicalMetric && clinicalMetric.status !== "ahead") {
     const gap = Math.max(0, clinicalMetric.targetValue - clinicalMetric.userValue);
     suggestions.push({
       area: "Clinical exposure",
-      target: `Add about ${Math.round(gap)} more clinically grounded hours to reach roughly ${clinicalMetric.targetValue} total.`,
+      target: `Add about ${Math.round(gap)} more clinical volunteer hours to reach roughly ${clinicalMetric.targetValue} core hours.`,
       rationale:
-        "Clinical work is a high-weight category and is hard to replace with other strengths.",
+        "This stricter model treats clinical volunteering as the core clinical-readiness signal and keeps paid clinical work as contextual support.",
       timeline: "Over the next 6 to 12 months",
     });
   }
@@ -873,6 +877,7 @@ export function calculateProfileReadiness(
     disclaimers: [
       "This tool estimates readiness. It does not guarantee admission.",
       "Medical school admissions are holistic and school-dependent.",
+      "In this stricter model, paid clinical work is treated as contextual support rather than part of the core clinical volunteer-hour benchmark.",
       "Use this score as a planning aid alongside advising, school research, and personal judgment.",
     ],
     narrative: {

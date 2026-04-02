@@ -1,7 +1,7 @@
 import type { BenchmarkConfig } from "@/types/premed";
 
 export const defaultBenchmarkConfig: BenchmarkConfig = {
-  version: "2026.04.2",
+  version: "2026.04.3",
   lastUpdated: "2026-04-02",
   weights: {
     academics: 35,
@@ -28,7 +28,7 @@ export const defaultBenchmarkConfig: BenchmarkConfig = {
       experienceTypes: { excellent: 4, strong: 3, moderate: 2, minimum: 1 },
     },
     service: {
-      totalHours: { excellent: 250, strong: 150, moderate: 75, minimum: 30 },
+      totalHours: { excellent: 650, strong: 350, moderate: 200, minimum: 75 },
       underservedHours: { excellent: 150, strong: 75, moderate: 40, minimum: 10 },
       categories: { excellent: 4, strong: 3, moderate: 2, minimum: 1 },
     },
@@ -95,15 +95,15 @@ export const defaultBenchmarkConfig: BenchmarkConfig = {
     doScienceGpaShift: 0.08,
     doMcatShift: 7,
     doOverallLift: 4,
-    noGapThreshold: 75,
-    oneGapThreshold: 58,
-    noGapAcademicFloor: 70,
-    noGapClinicalFloor: 65,
-    noGapServiceFloor: 55,
-    noGapShadowingFloor: 50,
-    strongOverallCap: 84,
-    eliteOverallCap: 89,
-    excellentCategoryFloor: 90,
+    noGapThreshold: 78,
+    oneGapThreshold: 60,
+    noGapAcademicFloor: 72,
+    noGapClinicalFloor: 55,
+    noGapServiceFloor: 58,
+    noGapShadowingFloor: 52,
+    strongOverallCap: 82,
+    eliteOverallCap: 88,
+    excellentCategoryFloor: 92,
     minExcellentCategoriesForStrongCap: 5,
     minExcellentCategoriesForEliteCap: 7,
     highConfidenceMargin: 8,

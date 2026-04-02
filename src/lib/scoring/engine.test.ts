@@ -9,10 +9,10 @@ describe("calculateProfileReadiness", () => {
       defaultBenchmarkConfig,
     );
 
-    expect(result.overallScore).toBeGreaterThanOrEqual(80);
-    expect(result.overallScore).toBeLessThan(90);
+    expect(result.overallScore).toBeGreaterThanOrEqual(78);
+    expect(result.overallScore).toBeLessThan(88);
     expect(result.gapYearPrediction).toBe("NO_GAP");
-    expect(result.competitivenessTier).toMatch(/VERY_STRONG|STRONG/);
+    expect(result.competitivenessTier).toBe("STRONG");
   });
 
   it("reserves 90-plus scores for profiles that are excellent across almost all categories", () => {
@@ -22,29 +22,29 @@ describe("calculateProfileReadiness", () => {
     );
     const eliteProfile = {
       ...sampleProfiles[0],
-      paidClinicalHours: 320,
-      clinicalVolunteerHours: 220,
+      paidClinicalHours: 420,
+      clinicalVolunteerHours: 360,
       clinicalExperienceTypes: [
         "Medical assistant",
         "Hospital volunteer",
         "EMT or paramedic",
         "Phlebotomy",
       ],
-      nonClinicalVolunteerHours: 280,
+      nonClinicalVolunteerHours: 720,
       serviceCategories: [
         "Food security",
         "Public health outreach",
         "Education or tutoring",
         "Mentoring",
       ],
-      researchHours: 520,
+      researchHours: 650,
       researchProjectsCount: 3,
-      postersPresentationsCount: 3,
+      postersPresentationsCount: 4,
       publicationsCount: 2,
-      abstractsCount: 2,
-      shadowingTotalHours: 90,
+      abstractsCount: 3,
+      shadowingTotalHours: 110,
       physiciansShadowed: 5,
-      leadershipHours: 260,
+      leadershipHours: 320,
       leadershipRolesCount: 3,
       highestLeadershipLevel: "FOUNDER" as const,
       paidNonClinicalWorkHours: 900,
@@ -88,6 +88,34 @@ describe("calculateProfileReadiness", () => {
     expect(doResult.overallScore).toBeGreaterThan(mdResult.overallScore);
     expect(doResult.gapYearPrediction).toBe("TWO_PLUS_GAPS");
     expect(mdResult.gapYearPrediction).toBe("TWO_PLUS_GAPS");
+  });
+
+  it("keeps paid clinical work out of the core clinical-hour score", () => {
+    const baseProfile = {
+      ...sampleProfiles[1],
+      paidClinicalHours: 0,
+      clinicalVolunteerHours: 160,
+    };
+    const paidClinicalVariant = {
+      ...baseProfile,
+      paidClinicalHours: 400,
+    };
+
+    const baseResult = calculateProfileReadiness(
+      baseProfile,
+      defaultBenchmarkConfig,
+    );
+    const paidVariantResult = calculateProfileReadiness(
+      paidClinicalVariant,
+      defaultBenchmarkConfig,
+    );
+
+    expect(paidVariantResult.categoryScores.clinicalExposure).toBe(
+      baseResult.categoryScores.clinicalExposure,
+    );
+    expect(paidVariantResult.categoryScores.employmentContext).toBeGreaterThan(
+      baseResult.categoryScores.employmentContext,
+    );
   });
 
   it("does not change the score when only narrative text fields change", () => {

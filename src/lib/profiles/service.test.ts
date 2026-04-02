@@ -27,11 +27,11 @@ describe("profile submission pipeline", () => {
     const saved = await fakeStore.createProfile("user_1", prepared.profile, prepared);
 
     expect(saved.scoreResult.overallScore).toBeGreaterThan(0);
-    expect(saved.scoreResult.gapYearPrediction).toBe("ONE_GAP");
+    expect(saved.scoreResult.gapYearPrediction).toBe("TWO_PLUS_GAPS");
     expect(stored[0]).toEqual(
       expect.objectContaining({
         userId: "user_1",
-        recommendation: "ONE_GAP",
+        recommendation: "TWO_PLUS_GAPS",
       }),
     );
   });

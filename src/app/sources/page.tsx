@@ -26,7 +26,10 @@ export default function SourcesPage() {
               This page separates official national data from heuristic planning
               ranges. The academic anchors are tied to current AAMC and AACOM
               releases. Hour-based experience cutoffs are transparent planning
-              bands, not claims that every school uses the same hard minimum.
+              bands, not claims that every school uses the same hard minimum. In
+              this stricter version, paid clinical work is tracked separately from
+              core clinical volunteer hours, and service bands are pushed much
+              closer to the national community-service context in recent AAMC data.
             </p>
           </div>
 

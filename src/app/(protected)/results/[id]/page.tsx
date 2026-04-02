@@ -56,9 +56,6 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const benchmarks = await getActiveBenchmarkConfig();
   const score = buildProfileSubmission(profile, benchmarks).result;
 
-  const clinicalHours =
-    profile.paidClinicalHours + profile.clinicalVolunteerHours;
-
   const radarData = score.categoryBreakdown.map((item) => ({
     label: item.label,
     current: Math.round(item.score),
@@ -169,7 +166,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <SummaryMetricCard label="Cumulative GPA" value={profile.cumulativeGpa.toFixed(2)} helper="Latest saved snapshot" icon={<BookOpenText className="size-5" />} />
         <SummaryMetricCard label="MCAT" value={profile.mcatTotal ? `${profile.mcatTotal}` : "Not taken"} helper="Current total score" icon={<Activity className="size-5" />} />
-        <SummaryMetricCard label="Clinical hours" value={`${clinicalHours}`} helper="Combined clinical exposure" icon={<Stethoscope className="size-5" />} />
+        <SummaryMetricCard label="Clinical volunteer hours" value={`${profile.clinicalVolunteerHours}`} helper="Core clinical benchmark; paid clinical work is scored separately as context" icon={<Stethoscope className="size-5" />} />
         <SummaryMetricCard label="Service hours" value={`${profile.nonClinicalVolunteerHours}`} helper="Non-clinical community service" icon={<HeartHandshake className="size-5" />} />
         <SummaryMetricCard label="Research hours" value={`${profile.researchHours}`} helper="Total research time" icon={<Microscope className="size-5" />} />
         <SummaryMetricCard label="Shadowing hours" value={`${profile.shadowingTotalHours}`} helper="Total physician shadowing" icon={<Eye className="size-5" />} />

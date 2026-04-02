@@ -79,9 +79,6 @@ export default async function DashboardPage() {
     target: Math.round(item.benchmarkTarget),
   }));
 
-  const clinicalHours =
-    latestProfile.paidClinicalHours + latestProfile.clinicalVolunteerHours;
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -119,7 +116,7 @@ export default async function DashboardPage() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <SummaryMetricCard label="Cumulative GPA" value={latestProfile.cumulativeGpa.toFixed(2)} helper="Latest saved profile" icon={<BookOpenText className="size-5" />} />
         <SummaryMetricCard label="MCAT" value={latestProfile.mcatTotal ? `${latestProfile.mcatTotal}` : "Not taken"} helper="Score snapshot" icon={<Activity className="size-5" />} />
-        <SummaryMetricCard label="Clinical hours" value={`${clinicalHours}`} helper="Combined paid and volunteer clinical exposure" icon={<Stethoscope className="size-5" />} />
+        <SummaryMetricCard label="Clinical volunteer hours" value={`${latestProfile.clinicalVolunteerHours}`} helper="Core clinical benchmark in this model" icon={<Stethoscope className="size-5" />} />
         <SummaryMetricCard label="Service hours" value={`${latestProfile.nonClinicalVolunteerHours}`} helper="Non-clinical service" icon={<HeartHandshake className="size-5" />} />
       </div>
 

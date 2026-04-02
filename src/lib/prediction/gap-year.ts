@@ -9,13 +9,13 @@ import type {
 type CategoryScores = Record<CategoryKey, number>;
 
 export function getCompetitivenessTier(score: number): CompetitivenessTier {
-  if (score >= 85) {
+  if (score >= 88) {
     return "VERY_STRONG";
   }
-  if (score >= 72) {
+  if (score >= 76) {
     return "STRONG";
   }
-  if (score >= 58) {
+  if (score >= 60) {
     return "BORDERLINE";
   }
   return "NEEDS_IMPROVEMENT";

@@ -9,8 +9,11 @@ const benchmarkRows = [
   ["Cumulative GPA", "3.80+ excellent, 3.65+ strong, 3.45+ moderate"],
   ["Science GPA", "3.75+ excellent, 3.60+ strong, 3.40+ moderate"],
   ["MCAT", "515+ excellent, 510+ strong, 505+ moderate"],
-  ["Clinical", "300+ hours strong, 150+ moderate"],
-  ["Service", "150+ non-clinical hours strong, 75+ moderate"],
+  [
+    "Clinical",
+    "300+ clinical volunteer hours strong; paid clinical work is tracked separately as context.",
+  ],
+  ["Service", "350+ non-clinical service hours strong, 600+ excellent"],
   ["Shadowing", "40+ hours strong, with physician breadth"],
   ["Research", "300+ stronger baseline, higher for research-heavy lists"],
 ];
@@ -70,6 +73,11 @@ export default function AboutPage() {
                   The model recommends extra time when one or more high-value areas
                   are underdeveloped, especially academics, clinical exposure, or
                   non-clinical service.
+                </p>
+                <p>
+                  In this stricter version, paid clinical work helps as context,
+                  but the core clinical benchmark is based on clinical volunteer
+                  hours rather than a combined total.
                 </p>
                 <p>
                   Service and leadership can partly offset weaker areas, but the

@@ -26,7 +26,12 @@ export const benchmarkMethodNotes = [
   {
     title: "Experience-hour cutoffs are planning heuristics",
     detail:
-      "AAMC and AACOM do not publish one universal national cutoff for clinical, research, service, or shadowing hours. Those bands are intentionally transparent heuristics informed by AAMC guidance and respected university prehealth advising pages.",
+      "AAMC and AACOM do not publish one universal national cutoff for clinical, research, service, or shadowing hours. Those bands are intentionally transparent heuristics informed by AAMC guidance, AMCAS activity categories, and respected university prehealth advising pages.",
+  },
+  {
+    title: "Clinical volunteering and paid clinical work are separated",
+    detail:
+      "AMCAS separates volunteer medical/clinical work from paid medical/clinical work. In this version of the app, volunteer clinical hours set the core clinical benchmark, while paid clinical work adds smaller contextual support instead of inflating the main hour total.",
   },
   {
     title: "The backend keeps these values configurable",
@@ -53,9 +58,9 @@ export const benchmarkDerivationNotes: BenchmarkDerivationNote[] = [
   {
     category: "Clinical and service",
     currentBands:
-      "Clinical, service, and leadership bands are conservative planning ranges rather than claims about national mean hour counts.",
+      "Clinical volunteering is benchmarked separately from paid clinical work, and non-clinical service now uses a much higher competitive band.",
     rationale:
-      "They are meant to flag underdevelopment early, not to imply that every medical school uses the same hard minimum.",
+      "AAMC's 2025 MD matriculant data reports 717 average community-service hours, while AMCAS explicitly separates volunteer medical/clinical work from paid medical/clinical employment. The app therefore uses a stricter volunteer-first clinical benchmark and a tougher service bar.",
   },
   {
     category: "Shadowing and research",
@@ -114,11 +119,32 @@ export const benchmarkSources: BenchmarkSource[] = [
     usedFor: [
       "Banding GPA and MCAT into moderate, strong, and excellent planning ranges",
       "Grounding the academics model in official MCAT/GPA outcome grids",
+      "Checking which experience categories admissions officers rate highly",
     ],
     keyStats: [
       "AAMC still presents GPA in 3.80-4.00, 3.60-3.79, and 3.40-3.59 style ranges for outcome interpretation.",
       "AAMC still presents MCAT in 514-517, 510-513, 506-509, and 502-505 style ranges for outcome interpretation.",
+      "In AAMC's 2023 admissions-officer survey, both community service/volunteer: medical-clinical and paid employment: medical-clinical fall in the highest-importance experience group.",
     ],
+  },
+  {
+    id: "amcas-work-activities-2027",
+    category: "Application structure",
+    title: "2027 AMCAS Application Worksheet",
+    organization: "AAMC",
+    url: "https://students-residents.aamc.org/media/14376/download",
+    publishedLabel: "2027 AMCAS worksheet",
+    verifiedOn: "2026-04-02",
+    usedFor: [
+      "Separating volunteer medical-clinical activity from paid medical-clinical employment in the scoring model",
+      "Explaining why paid clinical work is displayed as context rather than merged into the volunteer clinical benchmark",
+    ],
+    keyStats: [
+      "AMCAS lists Community Service/Volunteer - Medical/Clinical and Paid Employment - Medical/Clinical as separate experience types.",
+      "AMCAS records completed and anticipated hours for each experience entry separately rather than collapsing paid and volunteer experience into one bucket.",
+    ],
+    note:
+      "This separation does not prove that paid clinical work is unimportant. It supports the app's stricter decision to track volunteer clinical hours as the core benchmark and paid clinical work as supporting context.",
   },
   {
     id: "aacom-admissions-2024",
