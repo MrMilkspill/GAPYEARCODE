@@ -132,7 +132,7 @@ export const highestLeadershipLevelOptions = [
   { value: "CHAIR", label: "Chair" },
   { value: "VICE_PRESIDENT", label: "Vice President" },
   { value: "PRESIDENT", label: "President" },
-  { value: "FOUNDER", label: "Founder" },
+  { value: "FOUNDER", label: "Organization creator" },
 ] as const;
 
 export const applicationInterestOptions = [
@@ -218,9 +218,16 @@ export const serviceCategoryOptions = [
 export const dashboardNavigation = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/profiles/new", label: "New Profile" },
-  { href: "/founder", label: "Founder" },
-  { href: "/sources", label: "Sources" },
   { href: "/about", label: "Methodology" },
+  { href: "/sources", label: "Sources" },
+  { href: "/contact", label: "Contact" },
+] as const;
+
+export const marketingNavigation = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "Methodology" },
+  { href: "/sources", label: "Sources" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 export const enumLabels = {
