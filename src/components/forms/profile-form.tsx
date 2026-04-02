@@ -165,6 +165,16 @@ export function ProfileForm({
       };
 
       if (
+        (mergedValues.customClinicalExperienceTypes?.length ?? 0) > 0 &&
+        !(mergedValues.clinicalExperienceTypes ?? []).includes("Other")
+      ) {
+        mergedValues.clinicalExperienceTypes = [
+          ...(mergedValues.clinicalExperienceTypes ?? []),
+          "Other",
+        ];
+      }
+
+      if (
         (mergedValues.customServiceCategories?.length ?? 0) > 0 &&
         !(mergedValues.serviceCategories ?? []).includes("Other")
       ) {
@@ -191,6 +201,9 @@ export function ProfileForm({
     defaultValues,
   });
 
+  const selectedClinicalExperienceTypes = watch("clinicalExperienceTypes") ?? [];
+  const showCustomClinicalExperienceInput =
+    selectedClinicalExperienceTypes.includes("Other");
   const selectedServiceCategories = watch("serviceCategories") ?? [];
   const showCustomServiceCategoryInput =
     selectedServiceCategories.includes("Other");
@@ -209,6 +222,10 @@ export function ProfileForm({
         primaryCareShadowingHours: 0,
         underservedServiceHours: 0,
         paidClinicalWorkHours: values.paidClinicalHours,
+        customClinicalExperienceTypes:
+          selectedClinicalExperienceTypes.includes("Other")
+            ? values.customClinicalExperienceTypes
+            : [],
         customServiceCategories: selectedServiceCategories.includes("Other")
           ? values.customServiceCategories
           : [],
@@ -483,11 +500,21 @@ export function ProfileForm({
                     label={option}
                     checked={(field.value ?? []).includes(option)}
                     onToggle={() =>
-                      field.onChange(
-                        (field.value ?? []).includes(option)
+                      (() => {
+                        const isSelected = (field.value ?? []).includes(option);
+                        const nextValues = isSelected
                           ? (field.value ?? []).filter((value) => value !== option)
-                          : [...(field.value ?? []), option],
-                      )
+                          : [...(field.value ?? []), option];
+
+                        field.onChange(nextValues);
+
+                        if (option === "Other" && isSelected) {
+                          setValue("customClinicalExperienceTypes", [], {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }
+                      })()
                     }
                   />
                 ))}
@@ -495,6 +522,31 @@ export function ProfileForm({
             )}
           />
         </FieldGroup>
+        {showCustomClinicalExperienceInput ? (
+          <FieldGroup
+            label="Other clinical role types"
+            description="Add custom clinical role types separated by commas."
+          >
+            <Controller
+              control={control}
+              name="customClinicalExperienceTypes"
+              render={({ field }) => (
+                <Input
+                  value={(field.value ?? []).join(", ")}
+                  onChange={(event) =>
+                    field.onChange(
+                      event.target.value
+                        .split(",")
+                        .map((value) => value.trim())
+                        .filter(Boolean),
+                    )
+                  }
+                  placeholder="Free clinic intake, doula support, mobile health screening"
+                />
+              )}
+            />
+          </FieldGroup>
+        ) : null}
       </SectionCard>
 
       <SectionCard
