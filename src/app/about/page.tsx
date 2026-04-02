@@ -14,7 +14,10 @@ const benchmarkRows = [
     "150+ clinical volunteer hours strong, 300+ excellent; paid clinical work is tracked separately as context.",
   ],
   ["Service", "250+ non-clinical service hours strong, 450+ excellent"],
-  ["Shadowing", "40+ hours strong, with physician breadth"],
+  [
+    "Shadowing",
+    "Roughly 40 to 80 hours is the optimal band; more than 80 has diminishing returns in the score.",
+  ],
   ["Research", "300+ stronger baseline, higher for research-heavy lists"],
 ];
 
@@ -78,6 +81,12 @@ export default function AboutPage() {
                   In this stricter version, paid clinical work helps as context,
                   but the core clinical benchmark is based on clinical volunteer
                   hours rather than a combined total.
+                </p>
+                <p>
+                  The weights are intentionally tilted toward academics, core
+                  clinical volunteering, and non-clinical service. Shadowing is
+                  still tracked, but it is low-weight and capped around a
+                  reasonable planning band instead of being rewarded endlessly.
                 </p>
                 <p>
                   Service and leadership can partly offset weaker areas, but the

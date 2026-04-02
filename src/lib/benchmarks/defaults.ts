@@ -1,16 +1,16 @@
 import type { BenchmarkConfig } from "@/types/premed";
 
 export const defaultBenchmarkConfig: BenchmarkConfig = {
-  version: "2026.04.4",
+  version: "2026.04.5",
   lastUpdated: "2026-04-02",
   weights: {
-    academics: 35,
-    clinicalExposure: 20,
-    service: 15,
-    research: 10,
-    shadowing: 5,
+    academics: 40,
+    clinicalExposure: 21,
+    service: 16,
+    research: 6,
+    shadowing: 3,
     leadership: 5,
-    employmentContext: 5,
+    employmentContext: 4,
     applicationReadiness: 5,
   },
   thresholds: {
@@ -100,7 +100,7 @@ export const defaultBenchmarkConfig: BenchmarkConfig = {
     noGapAcademicFloor: 72,
     noGapClinicalFloor: 55,
     noGapServiceFloor: 58,
-    noGapShadowingFloor: 52,
+    noGapShadowingFloor: 46,
     strongOverallCap: 82,
     eliteOverallCap: 88,
     excellentCategoryFloor: 92,

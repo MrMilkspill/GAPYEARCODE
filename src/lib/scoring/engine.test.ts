@@ -42,7 +42,7 @@ describe("calculateProfileReadiness", () => {
       postersPresentationsCount: 4,
       publicationsCount: 2,
       abstractsCount: 3,
-      shadowingTotalHours: 110,
+      shadowingTotalHours: 70,
       physiciansShadowed: 5,
       leadershipHours: 320,
       leadershipRolesCount: 3,
@@ -88,6 +88,31 @@ describe("calculateProfileReadiness", () => {
     expect(doResult.overallScore).toBeGreaterThan(mdResult.overallScore);
     expect(doResult.gapYearPrediction).toBe("TWO_PLUS_GAPS");
     expect(mdResult.gapYearPrediction).toBe("TWO_PLUS_GAPS");
+  });
+
+  it("treats 40 to 80 shadowing hours as the preferred range instead of rewarding unlimited shadowing", () => {
+    const withinBandProfile = {
+      ...sampleProfiles[0],
+      shadowingTotalHours: 60,
+      physiciansShadowed: 3,
+    };
+    const overBandProfile = {
+      ...withinBandProfile,
+      shadowingTotalHours: 140,
+    };
+
+    const withinBandResult = calculateProfileReadiness(
+      withinBandProfile,
+      defaultBenchmarkConfig,
+    );
+    const overBandResult = calculateProfileReadiness(
+      overBandProfile,
+      defaultBenchmarkConfig,
+    );
+
+    expect(withinBandResult.categoryScores.shadowing).toBeGreaterThan(
+      overBandResult.categoryScores.shadowing,
+    );
   });
 
   it("keeps paid clinical work out of the core clinical-hour score", () => {

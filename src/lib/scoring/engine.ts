@@ -11,6 +11,7 @@ import {
   roundScore,
   scoreFromThresholds,
   scoreLowerIsBetter,
+  scoreWithinPreferredBand,
   weightedAverage,
 } from "@/lib/scoring/helpers";
 import type { PremedProfileInput } from "@/lib/validation/premed-profile";
@@ -340,9 +341,14 @@ function evaluateShadowing(
   profile: PremedProfileInput,
   config: BenchmarkConfig,
 ): CategoryEvaluation {
-  const totalScore = scoreFromThresholds(
+  const totalScore = scoreWithinPreferredBand(
     profile.shadowingTotalHours,
     config.thresholds.shadowing.totalHours,
+    config.thresholds.shadowing.totalHours.excellent,
+    {
+      softPenaltyFloor: 84,
+      hardPenaltyFloor: 68,
+    },
   );
   const physiciansScore = scoreFromThresholds(
     profile.physiciansShadowed,
@@ -356,14 +362,16 @@ function evaluateShadowing(
   return {
     score: clamp(
       weightedAverage([
-        { score: totalScore, weight: 75 },
-        { score: physiciansScore, weight: 25 },
+        { score: totalScore, weight: 70 },
+        { score: physiciansScore, weight: 30 },
       ]) - (virtualShare > 0.75 && profile.shadowingTotalHours < 40 ? 6 : 0),
     ),
-    benchmarkTarget: 70,
+    benchmarkTarget: 66,
     highlights: [
       `${profile.shadowingTotalHours} total shadowing hours and ${profile.physiciansShadowed} physician${profile.physiciansShadowed === 1 ? "" : "s"} shadowed determine most of this score.`,
-      "Breadth across more than one physician is helpful, but total exposure matters more than specialty mix.",
+      profile.shadowingTotalHours > config.thresholds.shadowing.totalHours.excellent
+        ? "This model treats roughly 40 to 80 shadowing hours as the useful target band, so piling on more than 80 creates diminishing returns instead of a higher score."
+        : "This model treats roughly 40 to 80 shadowing hours as the useful target band, with breadth across more than one physician helping the score.",
       virtualShare > 0.75 && profile.shadowingTotalHours < 40
         ? "A heavy virtual-only shadowing mix weakens this section."
         : "The current shadowing mix is acceptable for a general readiness estimate.",
@@ -555,7 +563,7 @@ function buildComparisonMetrics(
     ),
     createComparisonMetric(
       "shadowingHours",
-      "Shadowing hours",
+      "Shadowing hours (optimal 40-80)",
       profile.shadowingTotalHours,
       config.thresholds.shadowing.totalHours.strong,
       "hours",
@@ -612,6 +620,7 @@ function buildImprovementPlan(
   profile: PremedProfileInput,
   comparisonMetrics: ComparisonMetric[],
   categoryBreakdown: CategoryBreakdown[],
+  config: BenchmarkConfig,
 ): ImprovementSuggestion[] {
   const suggestions: ImprovementSuggestion[] = [];
 
@@ -640,6 +649,30 @@ function buildImprovementPlan(
       rationale:
         "Strong service helps round out the profile and matters especially for community-focused schools.",
       timeline: "Over the next 6 to 12 months",
+    });
+  }
+
+  if (profile.shadowingTotalHours < config.thresholds.shadowing.totalHours.strong) {
+    suggestions.push({
+      area: "Shadowing",
+      target:
+        "Build shadowing to roughly 40 to 60 total hours across more than one physician, then stop prioritizing additional shadowing once you are in that band.",
+      rationale:
+        "AAMC guidance treats shadowing as helpful but more substitutable than clinical volunteering, so this model uses a bounded target band instead of rewarding unlimited shadowing.",
+      timeline: "Over the next 3 to 6 months",
+    });
+  } else if (
+    profile.shadowingTotalHours > config.thresholds.shadowing.totalHours.excellent &&
+    ((clinicalMetric && clinicalMetric.status !== "ahead") ||
+      (serviceMetric && serviceMetric.status !== "ahead"))
+  ) {
+    suggestions.push({
+      area: "Time allocation",
+      target:
+        "Stop stacking more shadowing hours and redirect future time toward clinical volunteering, non-clinical service, or academic repair.",
+      rationale:
+        "In this model, shadowing is most useful in roughly the 40 to 80 hour band and has diminishing returns beyond that point.",
+      timeline: "Starting now",
     });
   }
 
@@ -850,6 +883,7 @@ export function calculateProfileReadiness(
     profile,
     comparisonMetrics,
     categoryBreakdown,
+    config,
   );
   const explanation = buildExplanation({
     prediction: gapYearPrediction,
@@ -878,6 +912,7 @@ export function calculateProfileReadiness(
       "This tool estimates readiness. It does not guarantee admission.",
       "Medical school admissions are holistic and school-dependent.",
       "In this stricter model, paid clinical work is treated as contextual support rather than part of the core clinical volunteer-hour benchmark.",
+      "Shadowing is treated as most useful in roughly the 40 to 80 hour range, so more than 80 hours does not automatically improve the score.",
       "Use this score as a planning aid alongside advising, school research, and personal judgment.",
     ],
     narrative: {

@@ -28,9 +28,10 @@ export default function SourcesPage() {
               releases. Hour-based experience cutoffs are transparent planning
               bands, not claims that every school uses the same hard minimum. In
               this stricter version, paid clinical work is tracked separately from
-              core clinical volunteer hours, and service bands are pushed much
-              closer to recent AAMC community-service context without treating the
-              full matriculant average as a required minimum.
+              core clinical volunteer hours, the weights lean harder on
+              academics plus sustained clinical and service exposure, and
+              shadowing is treated as most useful in roughly the 40 to 80 hour
+              range rather than as a category where more is always better.
             </p>
           </div>
 

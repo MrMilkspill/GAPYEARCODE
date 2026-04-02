@@ -34,6 +34,11 @@ export const benchmarkMethodNotes = [
       "AMCAS separates volunteer medical/clinical work from paid medical/clinical work. In this version of the app, volunteer clinical hours set the core clinical benchmark, while paid clinical work adds smaller contextual support instead of inflating the main hour total.",
   },
   {
+    title: "Weights follow a stricter importance order",
+    detail:
+      "The current model leans most heavily on academics, then clinical volunteering and non-clinical service. Shadowing and research stay lighter because AAMC guidance treats shadowing as substitutable and research expectations as mission-dependent.",
+  },
+  {
     title: "The backend keeps these values configurable",
     detail:
       "The app stores its thresholds centrally so they can be revised as new AAMC or AACOM releases arrive, or if an advisor wants to calibrate the model differently.",
@@ -65,9 +70,16 @@ export const benchmarkDerivationNotes: BenchmarkDerivationNote[] = [
   {
     category: "Shadowing and research",
     currentBands:
-      "Shadowing stays low-weight and research weight increases only for research-heavy school preferences.",
+      "Shadowing stays low-weight, peaks in roughly the 40 to 80 hour range, and research weight increases only for research-heavy school preferences.",
     rationale:
-      "AAMC guidance makes clear that shadowing can be supplemented by other clinical exposure and that research expectations vary by school mission.",
+      "AAMC guidance makes clear that shadowing can be supplemented by other clinical exposure, respected university advising pages usually cluster shadowing around roughly 20 to 50 hours, and research expectations vary by school mission. The app therefore treats shadowing as a bounded planning band instead of a category where more hours always help.",
+  },
+  {
+    category: "Category weighting",
+    currentBands:
+      "Academics carry the most weight, followed by clinical volunteering and non-clinical service, while research and shadowing are intentionally lighter.",
+    rationale:
+      "This is an inference from sources, not an official AAMC weight table. AAMC admissions-officer survey data keeps GPA and MCAT among the strongest admissions inputs, AAMC shadowing guidance says alternate activities are often accepted in place of shadowing, and AAMC research guidance says research expectations vary by school mission.",
   },
 ];
 

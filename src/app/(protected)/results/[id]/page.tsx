@@ -169,7 +169,7 @@ export default async function ResultPage({ params }: ResultPageProps) {
         <SummaryMetricCard label="Clinical volunteer hours" value={`${profile.clinicalVolunteerHours}`} helper="Core clinical benchmark; paid clinical work is scored separately as context" icon={<Stethoscope className="size-5" />} />
         <SummaryMetricCard label="Service hours" value={`${profile.nonClinicalVolunteerHours}`} helper="Non-clinical community service" icon={<HeartHandshake className="size-5" />} />
         <SummaryMetricCard label="Research hours" value={`${profile.researchHours}`} helper="Total research time" icon={<Microscope className="size-5" />} />
-        <SummaryMetricCard label="Shadowing hours" value={`${profile.shadowingTotalHours}`} helper="Total physician shadowing" icon={<Eye className="size-5" />} />
+        <SummaryMetricCard label="Shadowing hours" value={`${profile.shadowingTotalHours}`} helper="Optimal planning band is roughly 40-80; more has diminishing returns" icon={<Eye className="size-5" />} />
         <SummaryMetricCard label="Leadership hours" value={`${profile.leadershipHours}`} helper="Structured leadership involvement" icon={<UserRoundCog className="size-5" />} />
       </div>
 

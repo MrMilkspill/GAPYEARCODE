@@ -147,13 +147,13 @@ npm run prisma:migrate
 
 Default category weights:
 
-- Academics: 35%
-- Clinical exposure: 20%
-- Service: 15%
-- Research: 10%
-- Shadowing: 5%
+- Academics: 40%
+- Clinical exposure: 21%
+- Service: 16%
+- Research: 6%
+- Shadowing: 3%
 - Leadership: 5%
-- Employment/context: 5%
+- Employment/context: 4%
 - Application readiness: 5%
 
 Example benchmark logic baked into the app:
@@ -167,13 +167,14 @@ Example benchmark logic baked into the app:
   - 510+ strong
   - 505+ moderate
 - Clinical exposure:
-  - 300+ strong
-  - 150+ moderate
-- Service:
   - 150+ strong
-  - 75+ moderate
+  - 80+ moderate
+- Service:
+  - 250+ strong
+  - 125+ moderate
 - Shadowing:
-  - 40+ solid baseline
+  - 40 to 80 optimal planning band
+  - diminishing returns above 80
 - Research:
   - 300+ stronger baseline
   - higher expectations if the student targets research-heavy schools
@@ -184,6 +185,7 @@ Contextual adjustments included in the engine:
 - Working during school adds contextual credit
 - Strong service plus leadership can partly offset borderline areas
 - Weak academics are capped so extracurricular strength cannot fully hide them
+- Paid clinical work is tracked as helpful context instead of being merged into the core clinical volunteer-hour benchmark
 - DO-focused applications get a modest interpretation adjustment
 - Research-heavy or service-heavy school preferences shift weights slightly
 

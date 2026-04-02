@@ -50,6 +50,53 @@ export function scoreFromThresholds(value: number, range: BenchmarkRange) {
   return clamp(interpolate(value, 0, range.minimum, 8, 28), 8, 28);
 }
 
+export function scoreWithinPreferredBand(
+  value: number,
+  range: BenchmarkRange,
+  preferredMaximum: number,
+  options?: {
+    softPenaltySpan?: number;
+    hardPenaltySpan?: number;
+    softPenaltyFloor?: number;
+    hardPenaltyFloor?: number;
+  },
+) {
+  if (value <= preferredMaximum) {
+    return scoreFromThresholds(value, range);
+  }
+
+  const softPenaltySpan =
+    options?.softPenaltySpan ?? Math.max(20, preferredMaximum / 2);
+  const hardPenaltySpan =
+    options?.hardPenaltySpan ?? Math.max(40, preferredMaximum);
+  const softPenaltyFloor = options?.softPenaltyFloor ?? 84;
+  const hardPenaltyFloor = options?.hardPenaltyFloor ?? 68;
+  const softPenaltyMax = preferredMaximum + softPenaltySpan;
+  const hardPenaltyMax = softPenaltyMax + hardPenaltySpan;
+
+  if (value <= softPenaltyMax) {
+    return interpolate(
+      value,
+      preferredMaximum,
+      softPenaltyMax,
+      100,
+      softPenaltyFloor,
+    );
+  }
+
+  if (value <= hardPenaltyMax) {
+    return interpolate(
+      value,
+      softPenaltyMax,
+      hardPenaltyMax,
+      softPenaltyFloor,
+      hardPenaltyFloor,
+    );
+  }
+
+  return hardPenaltyFloor;
+}
+
 export function scoreLowerIsBetter(value: number, range: LowerIsBetterRange) {
   if (value <= range.excellent) {
     return 100;

@@ -28,7 +28,7 @@ const featureCards = [
   {
     title: "Transparent scoring",
     description:
-      "Every readiness estimate shows exactly how academics, clinical hours, service, research, and writing preparedness contribute.",
+      "Every readiness estimate shows exactly how academics, clinical volunteer hours, service, research, and application readiness contribute.",
     icon: LineChart,
   },
   {
@@ -85,7 +85,7 @@ export default function HomePage() {
               <div className="grid gap-4 sm:grid-cols-3">
                 <Card className="border-border/70 bg-card/95 shadow-sm">
                   <CardContent className="p-5">
-                    <p className="text-3xl font-semibold tracking-tight">35%</p>
+                    <p className="text-3xl font-semibold tracking-tight">40%</p>
                     <p className="mt-2 text-sm text-muted-foreground">
                       Academic weight in the default benchmark model
                     </p>
@@ -93,17 +93,17 @@ export default function HomePage() {
                 </Card>
                 <Card className="border-border/70 bg-card/95 shadow-sm">
                   <CardContent className="p-5">
-                    <p className="text-3xl font-semibold tracking-tight">300+</p>
+                    <p className="text-3xl font-semibold tracking-tight">150+</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Strong clinical-hour target in the default model
+                      Strong clinical volunteer-hour target in the default model
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="border-border/70 bg-card/95 shadow-sm">
                   <CardContent className="p-5">
-                    <p className="text-3xl font-semibold tracking-tight">40+</p>
+                    <p className="text-3xl font-semibold tracking-tight">40-80</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Shadowing hours usually viewed as a solid baseline
+                      Shadowing band with diminishing returns beyond the range
                     </p>
                   </CardContent>
                 </Card>
