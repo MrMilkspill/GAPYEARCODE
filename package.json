@@ -1,0 +1,11 @@
+{
+  "name": "gapyearcode-root",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "frontend:install": "npm --prefix frontend ci",
+    "frontend:build": "npm --prefix frontend run vercel-build",
+    "build": "npm run frontend:build",
+    "vercel-build": "npm run frontend:install && npm run frontend:build"
+  }
+}

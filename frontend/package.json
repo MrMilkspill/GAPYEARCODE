@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "next build",
+    "clean": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\"",
+    "vercel-build": "npm run clean && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
