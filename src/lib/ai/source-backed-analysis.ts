@@ -14,7 +14,8 @@ export type AiComparisonArea =
   | "clinical"
   | "service"
   | "research"
-  | "shadowing";
+  | "shadowing"
+  | "letters";
 
 export interface AiSourceBackedComparison {
   id: string;
@@ -188,6 +189,35 @@ function buildResearchInterpretation(profile: PremedProfileInput) {
   return "There is no research entered. That is not fatal for every school, but it narrows flexibility because AAMC says most accepted applicants have some research.";
 }
 
+function buildLettersInterpretation(profile: PremedProfileInput) {
+  const supportSourceCount = [
+    profile.researchMentorLetters > 0,
+    profile.clinicalSupervisorLetters > 0,
+    profile.serviceWorkSupervisorLetters > 0,
+  ].filter(Boolean).length;
+
+  if (profile.committeeLetter) {
+    return "A committee letter or packet is already in place, which is usually the cleanest letter structure for many schools.";
+  }
+
+  if (
+    profile.scienceProfessorLetters >= 2 &&
+    (profile.nonScienceProfessorLetters >= 1 || supportSourceCount >= 2)
+  ) {
+    return "The letter package already matches a common baseline of two science-faculty letters plus added non-science or mentor support.";
+  }
+
+  if (profile.scienceProfessorLetters >= 2) {
+    return "The science-faculty baseline is mostly there, but the package still needs more breadth from non-science or supervisor/research writers.";
+  }
+
+  if (profile.scienceProfessorLetters >= 1) {
+    return "The package has started, but it is still short of the common two-science-letter baseline used by many advising offices.";
+  }
+
+  return "The letter package is still too thin to treat as ready, even though exact requirements vary by school.";
+}
+
 export function buildSourceBackedComparisons(
   profile: PremedProfileInput,
 ): AiSourceBackedComparison[] {
@@ -277,6 +307,24 @@ export function buildSourceBackedComparisons(
       "AAMC says research expectations vary by school mission and that most accepted applicants have some research experience.",
     interpretation: buildResearchInterpretation(profile),
     sourceIds: ["aamc-research"],
+  });
+
+  comparisons.push({
+    id: "letters-context",
+    area: "letters",
+    label: "Recommendation letter package",
+    evidenceType: "official_guidance",
+    applicantValue: profile.committeeLetter
+      ? "Committee letter or packet available"
+      : `${profile.scienceProfessorLetters} science faculty | ${profile.nonScienceProfessorLetters} non-science faculty | ${profile.researchMentorLetters} research | ${profile.clinicalSupervisorLetters} clinical supervisor | ${profile.serviceWorkSupervisorLetters} service/work supervisor`,
+    benchmarkFact:
+      "AAMC says letter requirements vary by school, but its advising guidance highlights two science instructors as especially important. A common advising baseline is two science-faculty letters plus one non-science or other mentor/supervisor letter, with committee letters or packets often treated as the cleanest format.",
+    interpretation: buildLettersInterpretation(profile),
+    sourceIds: [
+      "amcas-letters-types",
+      "aamc-choosing-letter-writers",
+      "louisville-letters-brochure",
+    ],
   });
 
   return comparisons;

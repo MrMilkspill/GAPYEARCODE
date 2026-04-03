@@ -1,8 +1,8 @@
 import type { BenchmarkConfig } from "@/types/premed";
 
 export const defaultBenchmarkConfig: BenchmarkConfig = {
-  version: "2026.04.5",
-  lastUpdated: "2026-04-02",
+  version: "2026.04.6",
+  lastUpdated: "2026-04-03",
   weights: {
     academics: 40,
     clinicalExposure: 21,
@@ -64,6 +64,13 @@ export const defaultBenchmarkConfig: BenchmarkConfig = {
         AVERAGE: 70,
         STRONG: 95,
       },
+      recommendationLetters: {
+        scienceFaculty: { excellent: 3, strong: 2, moderate: 1, minimum: 0 },
+        nonScienceFaculty: { excellent: 2, strong: 1, moderate: 0, minimum: 0 },
+        supportSources: { excellent: 3, strong: 2, moderate: 1, minimum: 0 },
+        totalLetters: { excellent: 6, strong: 4, moderate: 3, minimum: 1 },
+        committeeLetterScore: 96,
+      },
       personalStatementScores: {
         NOT_STARTED: 25,
         DRAFTING: 55,
@@ -108,5 +115,9 @@ export const defaultBenchmarkConfig: BenchmarkConfig = {
     minExcellentCategoriesForEliteCap: 7,
     highConfidenceMargin: 8,
     lowConfidenceMargin: 4,
+    applicationReadinessFutureBaselineOne: 72,
+    applicationReadinessFutureBaselineTwoPlus: 82,
+    applicationReadinessFutureBlendOne: 0.55,
+    applicationReadinessFutureBlendTwoPlus: 0.2,
   },
 };

@@ -55,6 +55,7 @@ export function scoreWithinPreferredBand(
   range: BenchmarkRange,
   preferredMaximum: number,
   options?: {
+    overPreferredStartScore?: number;
     softPenaltySpan?: number;
     hardPenaltySpan?: number;
     softPenaltyFloor?: number;
@@ -69,6 +70,7 @@ export function scoreWithinPreferredBand(
     options?.softPenaltySpan ?? Math.max(20, preferredMaximum / 2);
   const hardPenaltySpan =
     options?.hardPenaltySpan ?? Math.max(40, preferredMaximum);
+  const overPreferredStartScore = options?.overPreferredStartScore ?? 100;
   const softPenaltyFloor = options?.softPenaltyFloor ?? 84;
   const hardPenaltyFloor = options?.hardPenaltyFloor ?? 68;
   const softPenaltyMax = preferredMaximum + softPenaltySpan;
@@ -79,7 +81,7 @@ export function scoreWithinPreferredBand(
       value,
       preferredMaximum,
       softPenaltyMax,
-      100,
+      overPreferredStartScore,
       softPenaltyFloor,
     );
   }

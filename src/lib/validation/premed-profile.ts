@@ -69,6 +69,55 @@ const mcatSectionSchema = requiredNumber("MCAT section score").int().refine(
   "MCAT section scores must be 0 if not taken, or between 118 and 132.",
 );
 
+type LetterPackageInput = {
+  committeeLetter?: boolean;
+  scienceProfessorLetters?: number;
+  nonScienceProfessorLetters?: number;
+  researchMentorLetters?: number;
+  clinicalSupervisorLetters?: number;
+  serviceWorkSupervisorLetters?: number;
+};
+
+function safeLetterCount(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+export function deriveLegacyLetterStrengthFromPackage({
+  committeeLetter,
+  scienceProfessorLetters = 0,
+  nonScienceProfessorLetters = 0,
+  researchMentorLetters = 0,
+  clinicalSupervisorLetters = 0,
+  serviceWorkSupervisorLetters = 0,
+}: LetterPackageInput) {
+  const totalLetters =
+    scienceProfessorLetters +
+    nonScienceProfessorLetters +
+    researchMentorLetters +
+    clinicalSupervisorLetters +
+    serviceWorkSupervisorLetters;
+  const supportSourceCount = [
+    researchMentorLetters > 0,
+    clinicalSupervisorLetters > 0,
+    serviceWorkSupervisorLetters > 0,
+  ].filter(Boolean).length;
+
+  if (
+    committeeLetter ||
+    (scienceProfessorLetters >= 2 &&
+      totalLetters >= 4 &&
+      (nonScienceProfessorLetters >= 1 || supportSourceCount >= 2))
+  ) {
+    return "STRONG" as const;
+  }
+
+  if (scienceProfessorLetters >= 1 && totalLetters >= 2) {
+    return "AVERAGE" as const;
+  }
+
+  return "WEAK" as const;
+}
+
 export const premedProfileSchema = z.object({
   fullName: requiredTextSchema("Full name"),
   email: z.string().trim().email("Enter a valid email address."),
@@ -137,6 +186,15 @@ export const premedProfileSchema = z.object({
   researchHeavyPreference: z.boolean(),
   serviceHeavyPreference: z.boolean(),
   stateSchoolPriority: z.boolean(),
+  committeeLetter: z.boolean(),
+  scienceProfessorLetters: nonNegativeInt("Science professor letters", 10),
+  nonScienceProfessorLetters: nonNegativeInt("Non-science professor letters", 10),
+  researchMentorLetters: nonNegativeInt("Research mentor letters", 10),
+  clinicalSupervisorLetters: nonNegativeInt("Clinical supervisor letters", 10),
+  serviceWorkSupervisorLetters: nonNegativeInt(
+    "Service or work supervisor letters",
+    10,
+  ),
   letterStrength: z.enum(letterStrengthValues),
   personalStatementReadiness: z.enum(personalStatementStatusValues),
   activitiesReadiness: z.enum(activitiesStatusValues),
@@ -173,6 +231,30 @@ export function normalizePremedProfileInput(
       ? values.underservedServiceHours
       : 0;
   values.paidClinicalWorkHours = paidClinicalHours;
+
+  const hasStructuredLetterData =
+    Boolean(values.committeeLetter) ||
+    safeLetterCount(values.scienceProfessorLetters) +
+      safeLetterCount(values.nonScienceProfessorLetters) +
+      safeLetterCount(values.researchMentorLetters) +
+      safeLetterCount(values.clinicalSupervisorLetters) +
+      safeLetterCount(values.serviceWorkSupervisorLetters) >
+      0;
+
+  if (hasStructuredLetterData || typeof values.letterStrength !== "string") {
+    values.letterStrength = deriveLegacyLetterStrengthFromPackage({
+      committeeLetter: values.committeeLetter === true,
+      scienceProfessorLetters: safeLetterCount(values.scienceProfessorLetters),
+      nonScienceProfessorLetters: safeLetterCount(
+        values.nonScienceProfessorLetters,
+      ),
+      researchMentorLetters: safeLetterCount(values.researchMentorLetters),
+      clinicalSupervisorLetters: safeLetterCount(values.clinicalSupervisorLetters),
+      serviceWorkSupervisorLetters: safeLetterCount(
+        values.serviceWorkSupervisorLetters,
+      ),
+    });
+  }
 
   return values;
 }
@@ -245,6 +327,12 @@ export const emptyProfileValues: PremedProfileFormValues = {
   researchHeavyPreference: false,
   serviceHeavyPreference: true,
   stateSchoolPriority: true,
+  committeeLetter: false,
+  scienceProfessorLetters: 0,
+  nonScienceProfessorLetters: 0,
+  researchMentorLetters: 0,
+  clinicalSupervisorLetters: 0,
+  serviceWorkSupervisorLetters: 0,
   letterStrength: "AVERAGE",
   personalStatementReadiness: "NOT_STARTED",
   activitiesReadiness: "NOT_STARTED",

@@ -71,7 +71,7 @@ describe("calculateProfileReadiness", () => {
 
     expect(result.overallScore).toBeLessThan(60);
     expect(result.gapYearPrediction).toBe("TWO_PLUS_GAPS");
-    expect(result.categoryScores.applicationReadiness).toBeLessThan(50);
+    expect(result.categoryScores.applicationReadiness).toBeLessThan(60);
     expect(result.categoryScores.service).toBeLessThan(50);
   });
 
@@ -113,6 +113,77 @@ describe("calculateProfileReadiness", () => {
     expect(withinBandResult.categoryScores.shadowing).toBeGreaterThan(
       overBandResult.categoryScores.shadowing,
     );
+    expect(
+      overBandResult.comparisonMetrics.find((metric) => metric.key === "shadowingHours")
+        ?.status,
+    ).toBe("above_range");
+  });
+
+  it("does not heavily punish unfinished materials when the planned cycle is still two years away", () => {
+    const farCycleProfile = {
+      ...sampleProfiles[1],
+      plannedApplicationCycle: "2028",
+      personalStatementReadiness: "NOT_STARTED" as const,
+      activitiesReadiness: "NOT_STARTED" as const,
+      schoolListReadiness: "NOT_STARTED" as const,
+      plannedSchoolListSize: 0,
+    };
+    const nearCycleProfile = {
+      ...farCycleProfile,
+      plannedApplicationCycle: "2026",
+    };
+
+    const farCycleResult = calculateProfileReadiness(
+      farCycleProfile,
+      defaultBenchmarkConfig,
+    );
+    const nearCycleResult = calculateProfileReadiness(
+      nearCycleProfile,
+      defaultBenchmarkConfig,
+    );
+
+    expect(farCycleResult.categoryScores.applicationReadiness).toBeGreaterThan(65);
+    expect(farCycleResult.categoryScores.applicationReadiness).toBeGreaterThan(
+      nearCycleResult.categoryScores.applicationReadiness,
+    );
+  });
+
+  it("grades recommendation letters from the structured package instead of only the legacy self-rating", () => {
+    const weakLettersProfile = {
+      ...sampleProfiles[0],
+      scienceProfessorLetters: 1,
+      nonScienceProfessorLetters: 0,
+      researchMentorLetters: 0,
+      clinicalSupervisorLetters: 0,
+      serviceWorkSupervisorLetters: 0,
+      committeeLetter: false,
+      letterStrength: "STRONG" as const,
+    };
+    const strongLettersProfile = {
+      ...weakLettersProfile,
+      scienceProfessorLetters: 2,
+      nonScienceProfessorLetters: 1,
+      researchMentorLetters: 1,
+      clinicalSupervisorLetters: 1,
+      serviceWorkSupervisorLetters: 0,
+    };
+
+    const weakLettersResult = calculateProfileReadiness(
+      weakLettersProfile,
+      defaultBenchmarkConfig,
+    );
+    const strongLettersResult = calculateProfileReadiness(
+      strongLettersProfile,
+      defaultBenchmarkConfig,
+    );
+
+    expect(strongLettersResult.categoryScores.applicationReadiness).toBeGreaterThan(
+      weakLettersResult.categoryScores.applicationReadiness,
+    );
+    expect(
+      strongLettersResult.comparisonMetrics.find((metric) => metric.key === "letters")
+        ?.status,
+    ).toBe("ahead");
   });
 
   it("keeps paid clinical work out of the core clinical-hour score", () => {

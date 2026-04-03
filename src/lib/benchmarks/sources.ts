@@ -43,6 +43,11 @@ export const benchmarkMethodNotes = [
     detail:
       "The app stores its thresholds centrally so they can be revised as new AAMC or AACOM releases arrive, or if an advisor wants to calibrate the model differently.",
   },
+  {
+    title: "Letter grading uses a common baseline, not a fake universal rule",
+    detail:
+      "AAMC says letter requirements vary by school. This version therefore uses a conservative common baseline: a committee letter or about two science-faculty letters plus one to two added letters from non-science, research, or clinical/service supervisors.",
+  },
 ] as const;
 
 export const benchmarkDerivationNotes: BenchmarkDerivationNote[] = [
@@ -81,9 +86,68 @@ export const benchmarkDerivationNotes: BenchmarkDerivationNote[] = [
     rationale:
       "This is an inference from sources, not an official AAMC weight table. AAMC admissions-officer survey data keeps GPA and MCAT among the strongest admissions inputs, AAMC shadowing guidance says alternate activities are often accepted in place of shadowing, and AAMC research guidance says research expectations vary by school mission.",
   },
+  {
+    category: "Letters of recommendation",
+    currentBands:
+      "Committee letter or packet is strongest. Without that, the model looks for about 2 science-faculty letters plus at least 1 to 2 additional letters from non-science faculty, research mentors, or clinical/service supervisors.",
+    rationale:
+      "AAMC says letter requirements vary by school, so the app does not claim one universal formula. Instead it uses AAMC guidance plus multiple advising sources that converge on two science letters as the core baseline, then treats additional academic or supervisor letters as the next layer of strength.",
+  },
 ];
 
 export const benchmarkSources: BenchmarkSource[] = [
+  {
+    id: "amcas-letters-types",
+    category: "Application guidance",
+    title: "AMCAS: Types of Letters of Evaluation",
+    organization: "AAMC",
+    url: "https://students-residents.aamc.org/applying-medical-school-amcas/publication-chapters/types-letters-evaluation",
+    publishedLabel: "AMCAS application guidance",
+    verifiedOn: "2026-04-03",
+    usedFor: [
+      "Explaining that letter requirements vary by school",
+      "Grounding committee-letter and letter-packet logic in AMCAS terminology",
+    ],
+    keyStats: [
+      "AAMC says each medical school determines the letters it will accept and require.",
+      "AMCAS supports committee letters, letter packets, and individual letters, with up to 10 letters assigned to a school.",
+    ],
+  },
+  {
+    id: "aamc-choosing-letter-writers",
+    category: "Application guidance",
+    title: "Advisor Corner: Choosing the Right Letter Writers",
+    organization: "AAMC",
+    url: "https://students-residents.aamc.org/applying-medical-school/advisor-corner-choosing-right-letter-writers",
+    publishedLabel: "AAMC advisor guidance",
+    verifiedOn: "2026-04-03",
+    usedFor: [
+      "Setting the academic baseline for recommendation letters",
+      "Justifying why science-faculty letters matter more than a generic self-rating",
+    ],
+    keyStats: [
+      "AAMC advises that recommendations from several instructors are helpful, with two science instructors identified as very important.",
+      "AAMC also suggests additional letters can come from research, service, employment, or medical mentors who know the applicant well.",
+    ],
+  },
+  {
+    id: "louisville-letters-brochure",
+    category: "University advising heuristic",
+    title: "Admissions Policies and Procedures Brochure",
+    organization: "University of Louisville School of Medicine",
+    url: "https://louisville.edu/medicine/admissions/files/admissions-policies-and-procedures-brochure.pdf",
+    publishedLabel: "School-level admissions brochure",
+    verifiedOn: "2026-04-03",
+    usedFor: [
+      "Common-baseline heuristic for structured letter packages",
+    ],
+    keyStats: [
+      "The brochure notes that most medical schools require at least two science-professor letters and one non-science-professor letter.",
+      "It also recommends additional letters from a physician, advisor, or volunteer supervisor when those relationships are substantive.",
+    ],
+    note:
+      "This is a school-level or advising-style example, not a universal national requirement. The app labels it as a heuristic rather than official across-the-board policy.",
+  },
   {
     id: "aamc-facts-2025",
     category: "MD national data",

@@ -20,7 +20,7 @@ export type ConfidenceLevel = "LOW" | "MODERATE" | "HIGH";
 
 export type MetricUnit = "gpa" | "score" | "hours" | "count" | "percent";
 
-export type ComparisonStatus = "ahead" | "on_track" | "below";
+export type ComparisonStatus = "ahead" | "on_track" | "below" | "above_range";
 
 export interface BenchmarkRange {
   excellent: number;
@@ -80,6 +80,13 @@ export interface BenchmarkConfig {
     };
     applicationReadiness: {
       letterStrengthScores: Record<string, number>;
+      recommendationLetters: {
+        scienceFaculty: BenchmarkRange;
+        nonScienceFaculty: BenchmarkRange;
+        supportSources: BenchmarkRange;
+        totalLetters: BenchmarkRange;
+        committeeLetterScore: number;
+      };
       personalStatementScores: Record<string, number>;
       activitiesScores: Record<string, number>;
       schoolListScores: Record<string, number>;
@@ -111,6 +118,10 @@ export interface BenchmarkConfig {
     minExcellentCategoriesForEliteCap: number;
     highConfidenceMargin: number;
     lowConfidenceMargin: number;
+    applicationReadinessFutureBaselineOne: number;
+    applicationReadinessFutureBaselineTwoPlus: number;
+    applicationReadinessFutureBlendOne: number;
+    applicationReadinessFutureBlendTwoPlus: number;
   };
 }
 

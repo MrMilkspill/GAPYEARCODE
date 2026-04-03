@@ -16,9 +16,13 @@ const benchmarkRows = [
   ["Service", "250+ non-clinical service hours strong, 450+ excellent"],
   [
     "Shadowing",
-    "Roughly 40 to 80 hours is the optimal band; more than 80 has diminishing returns in the score.",
+    "Roughly 40 to 80 hours is the optimal band; more than 80 actively grades down instead of looking better.",
   ],
   ["Research", "300+ stronger baseline, higher for research-heavy lists"],
+  [
+    "Letters",
+    "Committee letter is strongest; otherwise the model looks for about 2 science-faculty letters plus 1 to 2 additional letters from non-science, research, or clinical/service supervisors.",
+  ],
 ];
 
 export default function AboutPage() {
@@ -87,11 +91,18 @@ export default function AboutPage() {
                   clinical volunteering, and non-clinical service. Shadowing is
                   still tracked, but it is low-weight and capped around a
                   reasonable planning band instead of being rewarded endlessly.
+                  Going above that band does not help the score.
                 </p>
                 <p>
                   Service and leadership can partly offset weaker areas, but the
                   model intentionally prevents extracurricular strength from fully
                   hiding weak academics.
+                </p>
+                <p>
+                  Application-readiness items are buffered when the planned cycle
+                  is still far away, so a 2028 or later plan is not supposed to
+                  be punished the same way as an immediate-cycle applicant who
+                  has not started materials.
                 </p>
                 <p>
                   MD versus DO interest and research-heavy or service-heavy school

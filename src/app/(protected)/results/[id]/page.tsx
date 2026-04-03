@@ -66,7 +66,9 @@ export default async function ResultPage({ params }: ResultPageProps) {
   const percentToTargetData = score.comparisonMetrics.map((metric) => ({
     label: metric.label,
     current:
-      metric.targetValue === 0
+      metric.status === "above_range"
+        ? 100
+        : metric.targetValue === 0
         ? 100
         : Math.min(Math.round((metric.userValue / metric.targetValue) * 100), 140),
     target: 100,

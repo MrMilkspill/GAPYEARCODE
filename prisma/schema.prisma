@@ -168,6 +168,12 @@ model PremedProfile {
   researchHeavyPreference       Boolean
   serviceHeavyPreference        Boolean
   stateSchoolPriority           Boolean
+  committeeLetter               Boolean                 @default(false)
+  scienceProfessorLetters       Int                     @default(0)
+  nonScienceProfessorLetters    Int                     @default(0)
+  researchMentorLetters         Int                     @default(0)
+  clinicalSupervisorLetters     Int                     @default(0)
+  serviceWorkSupervisorLetters  Int                     @default(0)
   letterStrength                LetterStrength
   personalStatementReadiness    PersonalStatementStatus
   activitiesReadiness           ActivitiesStatus

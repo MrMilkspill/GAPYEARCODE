@@ -51,11 +51,17 @@ function buildPromptInput(
   benchmarks: BenchmarkConfig,
   comparisons: AiSourceBackedComparison[],
 ) {
+  const cycleYearMatch = profile.plannedApplicationCycle.match(/\b(20\d{2})\b/);
+  const plannedApplicationLeadYears = cycleYearMatch
+    ? Math.max(Number(cycleYearMatch[1]) - new Date().getFullYear(), 0)
+    : 0;
+
   return {
     applicant: {
       currentYearInSchool: profile.currentYear,
       applicationInterest: profile.applicationInterest,
       plannedApplicationCycle: profile.plannedApplicationCycle,
+      plannedApplicationLeadYears,
       researchHeavyPreference: profile.researchHeavyPreference,
       serviceHeavyPreference: profile.serviceHeavyPreference,
       stateSchoolPriority: profile.stateSchoolPriority,
@@ -96,6 +102,14 @@ function buildPromptInput(
       paidNonClinicalWorkHours: profile.paidNonClinicalWorkHours,
       workedDuringSemesters: profile.workedDuringSemesters,
       employmentWhileInSchool: profile.employmentWhileInSchool,
+    },
+    recommendationLetters: {
+      committeeLetter: profile.committeeLetter,
+      scienceProfessorLetters: profile.scienceProfessorLetters,
+      nonScienceProfessorLetters: profile.nonScienceProfessorLetters,
+      researchMentorLetters: profile.researchMentorLetters,
+      clinicalSupervisorLetters: profile.clinicalSupervisorLetters,
+      serviceWorkSupervisorLetters: profile.serviceWorkSupervisorLetters,
     },
     readinessModel: {
       overallScore: score.overallScore,
@@ -216,6 +230,7 @@ export async function generateMistralProfileAnalysis(
     "Do not call a metric below target if it is already at or above the stated target.",
     "Do not tell the applicant to replace paid clinical work; instead say to add more volunteer clinical hours if needed.",
     "Be more skeptical than flattering. Average profiles should not sound exceptional.",
+    "If the planned application cycle is still two or more years away, incomplete essays and school-list work should be treated as early-stage planning, not as a major present-tense flaw.",
     "If you mention benchmark numbers or external facts, they must come directly from the supplied sourceBackedComparisons.",
     "If a comparison is marked as an advising heuristic rather than official data, say that explicitly.",
     "Every deepDiveSection must reference one or more comparisonIds that appear in the supplied sourceBackedComparisons.",

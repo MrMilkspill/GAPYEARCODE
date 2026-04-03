@@ -15,13 +15,14 @@ type BarDatum = {
   label: string;
   current: number;
   target: number;
-  status: "ahead" | "on_track" | "below";
+  status: "ahead" | "on_track" | "below" | "above_range";
 };
 
 const fillMap = {
   ahead: "#0f766e",
   on_track: "#0284c7",
   below: "#f59e0b",
+  above_range: "#7c3aed",
 } as const;
 
 export function BenchmarkBarChart({ data }: { data: BarDatum[] }) {

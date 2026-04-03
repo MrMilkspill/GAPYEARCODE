@@ -16,7 +16,6 @@ import {
   clinicalExperienceOptions,
   currentYearOptions,
   highestLeadershipLevelOptions,
-  letterStrengthOptions,
   personalStatementStatusOptions,
   researchTypeOptions,
   schoolListStatusOptions,
@@ -833,7 +832,7 @@ export function ProfileForm({
 
       <SectionCard
         title="Application Readiness"
-        description="These are still comparable because the model maps each status to a fixed readiness score."
+        description="These are still comparable because the model maps each status to a fixed readiness score, grades a structured letter package instead of a vague self-rating, and buffers unfinished materials when the planned cycle is still far away."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FieldGroup
@@ -864,19 +863,6 @@ export function ProfileForm({
                   value={field.value}
                   onChange={field.onChange}
                   options={applicationInterestOptions}
-                />
-              )}
-            />
-          </FieldGroup>
-          <FieldGroup label="Letter strength" error={errors.letterStrength?.message}>
-            <Controller
-              control={control}
-              name="letterStrength"
-              render={({ field }) => (
-                <SelectField
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={letterStrengthOptions}
                 />
               )}
             />
@@ -929,6 +915,80 @@ export function ProfileForm({
               )}
             />
           </FieldGroup>
+        </div>
+        <div className="rounded-2xl border border-border/70 bg-background p-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Letter package</p>
+            <p className="text-xs text-muted-foreground">
+              Common baseline used in this model: a committee letter or roughly
+              2 science-faculty letters plus 1 to 2 additional letters from
+              non-science faculty, research, or clinical/service supervisors.
+              Schools vary, so this is a planning benchmark rather than a
+              universal rule.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <FieldGroup label="Committee letter or packet">
+              <label className="flex h-10 items-center gap-3 rounded-xl border border-input px-3">
+                <input
+                  type="checkbox"
+                  {...register("committeeLetter")}
+                  className="size-4"
+                />
+                <span className="text-sm">Available or expected</span>
+              </label>
+            </FieldGroup>
+            <FieldGroup
+              label="Science professor letters"
+              error={errors.scienceProfessorLetters?.message}
+            >
+              <Input
+                {...register("scienceProfessorLetters", zeroNumberFieldOptions)}
+                type="number"
+                min={0}
+              />
+            </FieldGroup>
+            <FieldGroup
+              label="Non-science professor letters"
+              error={errors.nonScienceProfessorLetters?.message}
+            >
+              <Input
+                {...register("nonScienceProfessorLetters", zeroNumberFieldOptions)}
+                type="number"
+                min={0}
+              />
+            </FieldGroup>
+            <FieldGroup
+              label="Research mentor letters"
+              error={errors.researchMentorLetters?.message}
+            >
+              <Input
+                {...register("researchMentorLetters", zeroNumberFieldOptions)}
+                type="number"
+                min={0}
+              />
+            </FieldGroup>
+            <FieldGroup
+              label="Clinical supervisor letters"
+              error={errors.clinicalSupervisorLetters?.message}
+            >
+              <Input
+                {...register("clinicalSupervisorLetters", zeroNumberFieldOptions)}
+                type="number"
+                min={0}
+              />
+            </FieldGroup>
+            <FieldGroup
+              label="Service or work supervisor letters"
+              error={errors.serviceWorkSupervisorLetters?.message}
+            >
+              <Input
+                {...register("serviceWorkSupervisorLetters", zeroNumberFieldOptions)}
+                type="number"
+                min={0}
+              />
+            </FieldGroup>
+          </div>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <FieldGroup label="School-list preference flags">

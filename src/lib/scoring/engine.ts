@@ -346,8 +346,11 @@ function evaluateShadowing(
     config.thresholds.shadowing.totalHours,
     config.thresholds.shadowing.totalHours.excellent,
     {
-      softPenaltyFloor: 84,
-      hardPenaltyFloor: 68,
+      overPreferredStartScore: 88,
+      softPenaltySpan: 20,
+      hardPenaltySpan: 60,
+      softPenaltyFloor: 72,
+      hardPenaltyFloor: 52,
     },
   );
   const physiciansScore = scoreFromThresholds(
@@ -370,13 +373,149 @@ function evaluateShadowing(
     highlights: [
       `${profile.shadowingTotalHours} total shadowing hours and ${profile.physiciansShadowed} physician${profile.physiciansShadowed === 1 ? "" : "s"} shadowed determine most of this score.`,
       profile.shadowingTotalHours > config.thresholds.shadowing.totalHours.excellent
-        ? "This model treats roughly 40 to 80 shadowing hours as the useful target band, so piling on more than 80 creates diminishing returns instead of a higher score."
+        ? "This model treats roughly 40 to 80 shadowing hours as the useful target band, so more than 80 hours actively grades down instead of looking better."
         : "This model treats roughly 40 to 80 shadowing hours as the useful target band, with breadth across more than one physician helping the score.",
       virtualShare > 0.75 && profile.shadowingTotalHours < 40
         ? "A heavy virtual-only shadowing mix weakens this section."
         : "The current shadowing mix is acceptable for a general readiness estimate.",
     ],
   };
+}
+
+function countLetterSupportSources(profile: PremedProfileInput) {
+  return [
+    profile.researchMentorLetters > 0,
+    profile.clinicalSupervisorLetters > 0,
+    profile.serviceWorkSupervisorLetters > 0,
+  ].filter(Boolean).length;
+}
+
+function totalStructuredLetters(profile: PremedProfileInput) {
+  return (
+    profile.scienceProfessorLetters +
+    profile.nonScienceProfessorLetters +
+    profile.researchMentorLetters +
+    profile.clinicalSupervisorLetters +
+    profile.serviceWorkSupervisorLetters
+  );
+}
+
+function evaluateRecommendationLetters(
+  profile: PremedProfileInput,
+  config: BenchmarkConfig,
+) {
+  const legacyScore =
+    config.thresholds.applicationReadiness.letterStrengthScores[
+      profile.letterStrength
+    ];
+  const letterConfig = config.thresholds.applicationReadiness.recommendationLetters;
+  const supportSourceCount = countLetterSupportSources(profile);
+  const totalLetters = totalStructuredLetters(profile);
+  const structuredPackagePresent = profile.committeeLetter || totalLetters > 0;
+
+  if (!structuredPackagePresent) {
+    return {
+      score: legacyScore,
+      summary:
+        "No structured letter package has been entered, so the app falls back to the legacy letter-strength value.",
+    };
+  }
+
+  const scienceScore = scoreFromThresholds(
+    profile.scienceProfessorLetters,
+    letterConfig.scienceFaculty,
+  );
+  const nonScienceScore = scoreFromThresholds(
+    profile.nonScienceProfessorLetters,
+    letterConfig.nonScienceFaculty,
+  );
+  const supportScore = scoreFromThresholds(
+    supportSourceCount,
+    letterConfig.supportSources,
+  );
+  const totalScore = scoreFromThresholds(totalLetters, letterConfig.totalLetters);
+
+  let packageScore = weightedAverage([
+    { score: scienceScore, weight: 42 },
+    { score: nonScienceScore, weight: 13 },
+    { score: supportScore, weight: 25 },
+    { score: totalScore, weight: 20 },
+  ]);
+
+  if (profile.committeeLetter) {
+    packageScore = Math.max(packageScore, letterConfig.committeeLetterScore);
+  } else if (
+    profile.scienceProfessorLetters >= 2 &&
+    (profile.nonScienceProfessorLetters >= 1 || supportSourceCount >= 2)
+  ) {
+    packageScore += 4;
+  }
+
+  return {
+    score: clamp(packageScore),
+    summary: profile.committeeLetter
+      ? "A committee letter or packet is available, which usually satisfies or strengthens many schools' baseline letter structure."
+      : `${profile.scienceProfessorLetters} science-faculty letter${profile.scienceProfessorLetters === 1 ? "" : "s"}, ${profile.nonScienceProfessorLetters} non-science academic letter${profile.nonScienceProfessorLetters === 1 ? "" : "s"}, and ${supportSourceCount} outside support source${supportSourceCount === 1 ? "" : "s"} define the current letter package.`,
+  };
+}
+
+function parsePlannedApplicationLeadYears(plannedApplicationCycle: string) {
+  const currentYear = new Date().getFullYear();
+  const firstYearMatch = plannedApplicationCycle.match(/\b(20\d{2})\b/);
+
+  if (!firstYearMatch) {
+    return 0;
+  }
+
+  const parsedYear = Number(firstYearMatch[1]);
+
+  if (Number.isNaN(parsedYear)) {
+    return 0;
+  }
+
+  return Math.max(parsedYear - currentYear, 0);
+}
+
+function bufferApplicationReadinessForTimeline(
+  baseScore: number,
+  leadYears: number,
+  config: BenchmarkConfig,
+) {
+  if (leadYears >= 2) {
+    return roundScore(
+      weightedAverage([
+        {
+          score: config.adjustments.applicationReadinessFutureBaselineTwoPlus,
+          weight:
+            100 -
+            config.adjustments.applicationReadinessFutureBlendTwoPlus * 100,
+        },
+        {
+          score: baseScore,
+          weight:
+            config.adjustments.applicationReadinessFutureBlendTwoPlus * 100,
+        },
+      ]),
+    );
+  }
+
+  if (leadYears >= 1) {
+    return roundScore(
+      weightedAverage([
+        {
+          score: config.adjustments.applicationReadinessFutureBaselineOne,
+          weight:
+            100 - config.adjustments.applicationReadinessFutureBlendOne * 100,
+        },
+        {
+          score: baseScore,
+          weight: config.adjustments.applicationReadinessFutureBlendOne * 100,
+        },
+      ]),
+    );
+  }
+
+  return roundScore(baseScore);
 }
 
 function evaluateLeadership(
@@ -457,10 +596,7 @@ function evaluateApplicationReadiness(
   profile: PremedProfileInput,
   config: BenchmarkConfig,
 ): CategoryEvaluation {
-  const letterScore =
-    config.thresholds.applicationReadiness.letterStrengthScores[
-      profile.letterStrength
-    ];
+  const letterEvaluation = evaluateRecommendationLetters(profile, config);
   const personalStatementScore =
     config.thresholds.applicationReadiness.personalStatementScores[
       profile.personalStatementReadiness
@@ -478,23 +614,31 @@ function evaluateApplicationReadiness(
       ? 90
       : profile.plannedSchoolListSize >= 12
         ? 75
-        : profile.plannedSchoolListSize > 0
+      : profile.plannedSchoolListSize > 0
           ? 55
           : 25;
+  const leadYears = parsePlannedApplicationLeadYears(profile.plannedApplicationCycle);
+  const baseScore = weightedAverage([
+    { score: letterEvaluation.score, weight: 25 },
+    { score: personalStatementScore, weight: 22 },
+    { score: activitiesScore, weight: 18 },
+    { score: schoolListScore, weight: 20 },
+    { score: schoolListSizeScore, weight: 15 },
+  ]);
 
   return {
     score: clamp(
-      weightedAverage([
-        { score: letterScore, weight: 25 },
-        { score: personalStatementScore, weight: 25 },
-        { score: activitiesScore, weight: 20 },
-        { score: schoolListScore, weight: 20 },
-        { score: schoolListSizeScore, weight: 10 },
-      ]),
+      bufferApplicationReadinessForTimeline(baseScore, leadYears, config),
     ),
     benchmarkTarget: 72,
     highlights: [
       `Application cycle planning is pointed at ${profile.plannedApplicationCycle}.`,
+      letterEvaluation.summary,
+      leadYears >= 2
+        ? "Because the planned cycle is still at least two years away, unfinished essays and school-list work are buffered instead of heavily dragging the score down right now."
+        : leadYears >= 1
+          ? "Because the planned cycle is about a year away, unfinished application materials still matter, but they are not graded as harshly as an immediate-cycle profile."
+          : "Because the planned cycle is close, application materials and letter readiness are graded at full weight.",
       `${profile.plannedSchoolListSize} planned schools and ${profile.schoolListReadiness.replaceAll("_", " ").toLowerCase()} school-list readiness shape logistical readiness.`,
       `${profile.personalStatementReadiness.replaceAll("_", " ").toLowerCase()} personal-statement status and ${profile.activitiesReadiness.replaceAll("_", " ").toLowerCase()} activities readiness drive the writing component.`,
     ],
@@ -510,6 +654,13 @@ function buildComparisonMetrics(
   const researchTarget = profile.researchHeavyPreference
     ? 400
     : config.thresholds.research.hours.strong;
+  const shadowingStatus =
+    profile.shadowingTotalHours > config.thresholds.shadowing.totalHours.excellent
+      ? "above_range"
+      : profile.shadowingTotalHours >= config.thresholds.shadowing.totalHours.strong
+        ? "on_track"
+        : "below";
+  const letterScore = evaluateRecommendationLetters(profile, config).score;
 
   return [
     createComparisonMetric(
@@ -561,13 +712,14 @@ function buildComparisonMetrics(
       researchTarget,
       "hours",
     ),
-    createComparisonMetric(
-      "shadowingHours",
-      "Shadowing hours (optimal 40-80)",
-      profile.shadowingTotalHours,
-      config.thresholds.shadowing.totalHours.strong,
-      "hours",
-    ),
+    {
+      key: "shadowingHours",
+      label: "Shadowing hours (preferred 40-80)",
+      userValue: profile.shadowingTotalHours,
+      targetValue: 60,
+      unit: "hours",
+      status: shadowingStatus,
+    },
     createComparisonMetric(
       "leadershipHours",
       "Leadership hours",
@@ -580,6 +732,13 @@ function buildComparisonMetrics(
       "Application readiness",
       categoryScores.applicationReadiness,
       72,
+      "percent",
+    ),
+    createComparisonMetric(
+      "letters",
+      "Letter package readiness",
+      letterScore,
+      78,
       "percent",
     ),
   ];
@@ -623,6 +782,7 @@ function buildImprovementPlan(
   config: BenchmarkConfig,
 ): ImprovementSuggestion[] {
   const suggestions: ImprovementSuggestion[] = [];
+  const leadYears = parsePlannedApplicationLeadYears(profile.plannedApplicationCycle);
 
   const clinicalMetric = comparisonMetrics.find(
     (metric) => metric.key === "clinicalVolunteerHours",
@@ -676,6 +836,21 @@ function buildImprovementPlan(
     });
   }
 
+  const lettersMetric = comparisonMetrics.find((metric) => metric.key === "letters");
+  if (lettersMetric && lettersMetric.status !== "ahead") {
+    suggestions.push({
+      area: "Letters of recommendation",
+      target:
+        "Build toward a committee packet or at least 2 science-faculty letters plus 1 to 2 additional letters from a non-science professor, research mentor, or clinical/service supervisor.",
+      rationale:
+        "AAMC says requirements vary by school, but this model treats two science letters plus added outside support as the common baseline rather than relying only on a vague self-rating.",
+      timeline:
+        leadYears >= 2
+          ? "Start identifying writers now and firm this up over the next 6 to 12 months"
+          : "Over the next 3 to 9 months",
+    });
+  }
+
   const researchMetric = comparisonMetrics.find(
     (metric) => metric.key === "researchHours",
   );
@@ -715,10 +890,14 @@ function buildImprovementPlan(
     suggestions.push({
       area: "Application materials",
       target:
-        "Finish a strong personal statement draft, complete the activities section, and build a school list before opening the cycle.",
+        leadYears >= 2
+          ? "Keep a running activities inventory, identify likely letter writers, and start school-list research early rather than forcing polished essays right now."
+          : "Finish a strong personal statement draft, complete the activities section, and build a school list before opening the cycle.",
       rationale:
-        "Operational readiness can be the difference between a usable cycle and a rushed one.",
-      timeline: "Over the next 2 to 4 months",
+        leadYears >= 2
+          ? "Because the cycle is still farther out, the goal is steady preparation and relationship-building rather than pretending everything must already be polished."
+          : "Operational readiness can be the difference between a usable cycle and a rushed one.",
+      timeline: leadYears >= 2 ? "Over the next 6 to 12 months" : "Over the next 2 to 4 months",
     });
   }
 

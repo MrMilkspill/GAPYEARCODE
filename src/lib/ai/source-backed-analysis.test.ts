@@ -47,6 +47,7 @@ describe("source-backed AI benchmark comparisons", () => {
         "service-context",
         "shadowing-context",
         "research-context",
+        "letters-context",
       ]),
     );
 

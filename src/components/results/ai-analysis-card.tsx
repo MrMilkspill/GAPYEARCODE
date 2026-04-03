@@ -32,7 +32,13 @@ type AiProfileAnalysis = {
 
 type AiSourceBackedComparison = {
   id: string;
-  area: "academics" | "clinical" | "service" | "research" | "shadowing";
+  area:
+    | "academics"
+    | "clinical"
+    | "service"
+    | "research"
+    | "shadowing"
+    | "letters";
   label: string;
   evidenceType: "official_data" | "official_guidance" | "advising_heuristic";
   applicantValue: string;

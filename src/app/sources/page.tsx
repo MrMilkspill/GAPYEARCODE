@@ -32,6 +32,9 @@ export default function SourcesPage() {
               academics plus sustained clinical and service exposure, and
               shadowing is treated as most useful in roughly the 40 to 80 hour
               range rather than as a category where more is always better.
+              Recommendation letters are also graded from a structured package
+              instead of a vague self-rating, while application-material timing
+              is buffered when the planned cycle is still far away.
             </p>
           </div>
 
