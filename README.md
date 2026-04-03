@@ -33,6 +33,7 @@ The app is intentionally transparent:
 - Plain-English explanation of strengths, weaknesses, and biggest next steps
 - Dashboard with saved profile history
 - Results page with charts, score breakdown, and improvement plan
+- Optional server-side Mistral analysis on the results page
 - Methodology page that explains the heuristic model and disclaimers
 - Seeded benchmark config plus demo profiles
 - Print/export-friendly results action via browser print dialog
@@ -100,6 +101,15 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/premed_gap_year_pred
 NEXTAUTH_SECRET="replace-with-a-long-random-string"
 NEXTAUTH_URL="http://localhost:3000"
 ```
+
+Optional AI analysis variables:
+
+```env
+MISTRAL_API_KEY="replace-with-your-mistral-api-key"
+MISTRAL_MODEL="mistral-small-latest"
+```
+
+If `MISTRAL_API_KEY` is set, the results page can call Mistral from the backend to generate a supplemental model-written analysis of the saved profile and current score breakdown.
 
 Generate a secret with Node if needed:
 
@@ -193,6 +203,11 @@ The source of truth for thresholds and weights lives in:
 
 - `src/lib/benchmarks/defaults.ts`
 
+The optional backend AI analysis lives in:
+
+- `src/lib/ai/mistral.ts`
+- `src/app/api/profiles/[id]/ai-analysis/route.ts`
+
 The app also seeds a `BenchmarkConfig` database record so thresholds can be made editable later.
 
 ## Tests
@@ -216,6 +231,8 @@ npm run test
    - `DATABASE_URL`
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL`
+   - `MISTRAL_API_KEY` if you want server-side AI analysis
+   - `MISTRAL_MODEL` optionally, if you want a model other than the default
 4. Deploy the project.
 5. Run Prisma migrations against the production database:
 

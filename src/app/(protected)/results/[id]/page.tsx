@@ -17,6 +17,7 @@ import { BenchmarkRadarChart } from "@/components/dashboard/benchmark-radar-char
 import { PrintResultsButton } from "@/components/dashboard/print-results-button";
 import { ReadinessGauge } from "@/components/dashboard/readiness-gauge";
 import { SummaryMetricCard } from "@/components/dashboard/summary-metric-card";
+import { AiAnalysisCard } from "@/components/results/ai-analysis-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -194,6 +195,8 @@ export default async function ResultPage({ params }: ResultPageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <AiAnalysisCard profileId={profile.id} />
 
       <div className="grid gap-6 xl:grid-cols-3">
         <Card className="border-border/70 bg-card/95 shadow-sm">
