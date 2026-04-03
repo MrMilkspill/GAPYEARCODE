@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     supabase_anon_key: str
     supabase_service_role_key: str
     allowed_origins: list[str] = ["http://localhost:3000"]
+    allowed_origin_regex: str | None = None
     mistral_api_key: str | None = None
     mistral_model: str = "mistral-small-latest"
 
@@ -24,6 +25,13 @@ class Settings(BaseSettings):
         if isinstance(value, list):
             return value
         return [item.strip() for item in value.split(",") if item.strip()]
+
+    @field_validator("allowed_origin_regex", mode="before")
+    @classmethod
+    def normalize_allowed_origin_regex(cls, value: str | None) -> str | None:
+        if isinstance(value, str):
+            value = value.strip()
+        return value or None
 
 
 @lru_cache

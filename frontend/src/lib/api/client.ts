@@ -21,7 +21,19 @@ function getBackendBaseUrl() {
     );
   }
 
-  return baseUrl.replace(/\/+$/, "");
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    /:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalizedBaseUrl)
+  ) {
+    throw new Error(
+      "Backend API points to localhost in production. Set NEXT_PUBLIC_BACKEND_API_URL to your deployed backend URL.",
+    );
+  }
+
+  return normalizedBaseUrl;
 }
 
 

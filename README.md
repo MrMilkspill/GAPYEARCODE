@@ -53,6 +53,7 @@ The frontend runs on `http://localhost:3000` by default.
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ALLOWED_ORIGINS`
+   - `ALLOWED_ORIGIN_REGEX` if you want regex-based origin matching
    - `MISTRAL_API_KEY` if you want AI analysis enabled
    - `MISTRAL_MODEL` if you want a different Mistral model
 3. Create a virtual environment and install dependencies:
@@ -80,6 +81,42 @@ The backend exposes:
 - `PATCH /profiles/{id}`
 - `DELETE /profiles/{id}`
 - `GET /profiles/{id}/ai-analysis`
+
+## Vercel deployment
+
+This architecture needs two Vercel projects:
+
+- `frontend/` as the Next.js app
+- `backend/` as the FastAPI app
+
+The current frontend project is linked under [frontend/.vercel/project.json](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/frontend/.vercel/project.json). The backend is not part of that deployment unless you create a second Vercel project whose root directory is `backend/`.
+
+For the backend Vercel project:
+
+1. Set the root directory to `backend`.
+2. Add these env vars:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ALLOWED_ORIGINS`
+   - `ALLOWED_ORIGIN_REGEX` if you want preview-domain support
+   - `MISTRAL_API_KEY` if you want AI analysis enabled
+3. Vercel can detect the FastAPI app from [backend/index.py](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/backend/index.py).
+
+For the frontend Vercel project:
+
+1. Set the root directory to `frontend`.
+2. Add:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_BACKEND_API_URL`
+3. Set `NEXT_PUBLIC_BACKEND_API_URL` to your deployed backend URL, not `http://localhost:8000`.
+
+Also add your production callback URL in Supabase Auth, for example:
+
+```text
+https://your-frontend.vercel.app/auth/callback
+```
 
 ## Supabase setup
 
