@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { getSessionUser } from "@/lib/auth";
+import {
+  buildSourceBackedComparisons,
+  collectComparisonSources,
+} from "@/lib/ai/source-backed-analysis";
 import { getActiveBenchmarkConfig } from "@/lib/benchmarks/service";
 import { generateMistralProfileAnalysis } from "@/lib/ai/mistral";
 import { getProfileForUser } from "@/lib/profiles/repository";
@@ -27,15 +31,22 @@ export async function GET(_: Request, { params }: RouteContext) {
 
   const benchmarks = await getActiveBenchmarkConfig();
   const submission = buildProfileSubmission(profile, benchmarks);
+  const comparisons = buildSourceBackedComparisons(submission.profile);
+  const sources = collectComparisonSources(comparisons);
 
   try {
     const result = await generateMistralProfileAnalysis(
       submission.profile,
       submission.result,
       benchmarks,
+      comparisons,
     );
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      comparisons,
+      sources,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown AI analysis error.";

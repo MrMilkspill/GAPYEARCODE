@@ -23,6 +23,23 @@ describe("mistral helpers", () => {
         headline: "Solid but not yet ready",
         verdict: "The backend model agrees that more runway is likely needed.",
         supportingRationale: "Academics are workable, but service is light.",
+        deepDiveSections: [
+          {
+            title: "Academic position",
+            body: "The GPA is respectable, but the MCAT still sits below recent MD matriculant means.",
+            comparisonIds: ["md-academics"],
+          },
+          {
+            title: "Experience profile",
+            body: "Clinical volunteering and service still need more depth than the current profile shows.",
+            comparisonIds: ["clinical-context", "service-context"],
+          },
+          {
+            title: "Strategy",
+            body: "The profile would benefit more from additional service and clinical volunteering than from more shadowing.",
+            comparisonIds: ["shadowing-context"],
+          },
+        ],
         strongestSignals: ["GPA is competitive", "Clinical volunteering is decent"],
         limitingFactors: ["Service remains thin", "Application readiness is incomplete"],
         priorityActions: [

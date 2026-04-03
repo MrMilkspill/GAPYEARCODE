@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { BrainCircuit, RefreshCw, Sparkles } from "lucide-react";
+import { BrainCircuit, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,19 +13,55 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+type AiAnalysisSection = {
+  title: string;
+  body: string;
+  comparisonIds: string[];
+};
+
 type AiProfileAnalysis = {
   headline: string;
   verdict: string;
   supportingRationale: string;
+  deepDiveSections: AiAnalysisSection[];
   strongestSignals: string[];
   limitingFactors: string[];
   priorityActions: string[];
   cautionNote: string;
 };
 
+type AiSourceBackedComparison = {
+  id: string;
+  area: "academics" | "clinical" | "service" | "research" | "shadowing";
+  label: string;
+  evidenceType: "official_data" | "official_guidance" | "advising_heuristic";
+  applicantValue: string;
+  benchmarkFact: string;
+  interpretation: string;
+  sourceIds: string[];
+};
+
+type AiAnalysisSource = {
+  id: string;
+  title: string;
+  organization: string;
+  url: string;
+  publishedLabel: string;
+  verifiedOn: string;
+  keyStats: string[];
+  note?: string;
+};
+
 type Props = {
   profileId: string;
 };
+
+const EVIDENCE_TYPE_LABELS: Record<AiSourceBackedComparison["evidenceType"], string> =
+  {
+    official_data: "Official data",
+    official_guidance: "Official guidance",
+    advising_heuristic: "Advising heuristic",
+  };
 
 async function parseJsonSafely(response: Response) {
   const text = await response.text();
@@ -39,6 +75,8 @@ async function parseJsonSafely(response: Response) {
       error?: string;
       model?: string;
       analysis?: AiProfileAnalysis;
+      comparisons?: AiSourceBackedComparison[];
+      sources?: AiAnalysisSource[];
     };
   } catch {
     return null;
@@ -47,6 +85,8 @@ async function parseJsonSafely(response: Response) {
 
 export function AiAnalysisCard({ profileId }: Props) {
   const [analysis, setAnalysis] = useState<AiProfileAnalysis | null>(null);
+  const [comparisons, setComparisons] = useState<AiSourceBackedComparison[]>([]);
+  const [sources, setSources] = useState<AiAnalysisSource[]>([]);
   const [model, setModel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasAttempted, setHasAttempted] = useState(false);
@@ -71,9 +111,13 @@ export function AiAnalysisCard({ profileId }: Props) {
         }
 
         setAnalysis(json.analysis);
+        setComparisons(json.comparisons ?? []);
+        setSources(json.sources ?? []);
         setModel(json.model ?? null);
       } catch (caughtError) {
         setAnalysis(null);
+        setComparisons([]);
+        setSources([]);
         setModel(null);
         setError(
           caughtError instanceof Error
@@ -84,15 +128,20 @@ export function AiAnalysisCard({ profileId }: Props) {
     });
   }
 
+  const comparisonMap = Object.fromEntries(
+    comparisons.map((comparison) => [comparison.id, comparison]),
+  );
+  const sourceMap = Object.fromEntries(sources.map((source) => [source.id, source]));
+
   return (
     <Card className="border-border/70 bg-card/95 shadow-sm">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="space-y-2">
           <CardTitle>AI analysis</CardTitle>
           <CardDescription>
-            This uses a real server-side Mistral call to analyze the saved
-            profile and current score breakdown. The transparent benchmark score
-            remains the primary result.
+            This uses a real server-side Mistral call, but the model is anchored
+            to deterministic AAMC, AACOM, and advising-source benchmark facts so
+            the analysis can cite published data instead of inventing numbers.
           </CardDescription>
         </div>
         <BrainCircuit className="size-5 text-primary" />
@@ -102,7 +151,8 @@ export function AiAnalysisCard({ profileId }: Props) {
           <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-background p-4">
             <p className="text-sm text-muted-foreground">
               Generate a model-written interpretation of your profile, strongest
-              signals, limiting factors, and next-best moves.
+              signals, limiting factors, and next-best moves, plus a source-backed
+              comparison against published benchmark facts.
             </p>
             <Button type="button" onClick={loadAnalysis}>
               <Sparkles className="size-4" />
@@ -147,6 +197,38 @@ export function AiAnalysisCard({ profileId }: Props) {
               ) : null}
             </div>
 
+            <div className="grid gap-4 xl:grid-cols-2">
+              {analysis.deepDiveSections.map((section) => (
+                <div
+                  key={section.title}
+                  className="rounded-2xl border border-border/70 bg-background p-4"
+                >
+                  <p className="font-medium">{section.title}</p>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    {section.body}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {section.comparisonIds.map((comparisonId) => {
+                      const comparison = comparisonMap[comparisonId];
+
+                      if (!comparison) {
+                        return null;
+                      }
+
+                      return (
+                        <span
+                          key={comparisonId}
+                          className="rounded-full border border-border/70 bg-muted px-3 py-1 text-xs text-muted-foreground"
+                        >
+                          {comparison.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div className="grid gap-4 xl:grid-cols-3">
               <div className="rounded-2xl border border-border/70 bg-background p-4">
                 <p className="font-medium">Strongest signals</p>
@@ -171,6 +253,83 @@ export function AiAnalysisCard({ profileId }: Props) {
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
+              </div>
+            </div>
+
+            <div className="space-y-4 rounded-2xl border border-border/70 bg-background p-4">
+              <div className="space-y-1">
+                <p className="font-medium">Source-backed benchmark facts</p>
+                <p className="text-sm text-muted-foreground">
+                  These facts are deterministic. The model can interpret them, but
+                  it does not get to invent them.
+                </p>
+              </div>
+
+              <div className="grid gap-4 xl:grid-cols-2">
+                {comparisons.map((comparison) => (
+                  <div
+                    key={comparison.id}
+                    className="rounded-2xl border border-border/70 bg-muted/40 p-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="font-medium">{comparison.label}</p>
+                      <span className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs text-muted-foreground">
+                        {EVIDENCE_TYPE_LABELS[comparison.evidenceType]}
+                      </span>
+                    </div>
+                    <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                          Your data
+                        </p>
+                        <p>{comparison.applicantValue}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                          Published benchmark fact
+                        </p>
+                        <p>{comparison.benchmarkFact}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                          Interpretation
+                        </p>
+                        <p>{comparison.interpretation}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                          Citations
+                        </p>
+                        <ul className="mt-2 space-y-2">
+                          {comparison.sourceIds.map((sourceId) => {
+                            const source = sourceMap[sourceId];
+
+                            if (!source) {
+                              return null;
+                            }
+
+                            return (
+                              <li key={source.id}>
+                                <a
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
+                                >
+                                  {source.organization}: {source.title}
+                                  <ExternalLink className="size-3" />
+                                </a>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {source.publishedLabel}. Verified {source.verifiedOn}.
+                                </p>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
