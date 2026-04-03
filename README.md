@@ -53,7 +53,7 @@ The frontend runs on `http://localhost:3000` by default.
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ALLOWED_ORIGINS`
-   - `MISTRAL_API_KEY`
+   - `MISTRAL_API_KEY` if you want AI analysis enabled
    - `MISTRAL_MODEL` if you want a different Mistral model
 3. Create a virtual environment and install dependencies:
 
@@ -81,27 +81,6 @@ The backend exposes:
 - `DELETE /profiles/{id}`
 - `GET /profiles/{id}/ai-analysis`
 
-## Render deployment
-
-The repo includes a Render Blueprint file at [render.yaml](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/render.yaml) for the FastAPI backend.
-
-1. Push this repo to GitHub.
-2. In Render, create a new Blueprint instance or Web Service from the repo.
-3. Render will detect the backend service from `render.yaml`.
-4. Set these environment variables in Render before deploying:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `ALLOWED_ORIGINS`
-   - `MISTRAL_API_KEY`
-5. Use your frontend URL in `ALLOWED_ORIGINS`.
-
-The backend start command used by Render is:
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
-
 ## Supabase setup
 
 1. Create a Supabase project.
@@ -123,6 +102,8 @@ The backend system prompt is stored in:
 - [backend/app/prompts/system_prompt.txt](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/backend/app/prompts/system_prompt.txt)
 
 `POST /chat` and the profile analysis route both load this file at runtime so the model behavior stays outside the route definitions.
+
+If `MISTRAL_API_KEY` is left blank, the backend still runs for auth, profile CRUD, and scoring. Only the AI analysis endpoints will be unavailable.
 
 ## Notes
 
