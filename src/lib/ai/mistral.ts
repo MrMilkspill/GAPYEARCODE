@@ -3,14 +3,19 @@ import { z } from "zod";
 import type { BenchmarkConfig, ScoreComputation } from "@/types/premed";
 import type { PremedProfileInput } from "@/lib/validation/premed-profile";
 
+const stringOrStringArraySchema = z.union([
+  z.string().min(1),
+  z.array(z.string().min(1)).min(1),
+]);
+
 export const aiProfileAnalysisSchema = z.object({
   headline: z.string().min(1),
   verdict: z.string().min(1),
-  supportingRationale: z.string().min(1),
+  supportingRationale: stringOrStringArraySchema,
   strongestSignals: z.array(z.string().min(1)).min(2).max(5),
   limitingFactors: z.array(z.string().min(1)).min(2).max(5),
   priorityActions: z.array(z.string().min(1)).min(3).max(6),
-  cautionNote: z.string().min(1),
+  cautionNote: stringOrStringArraySchema,
 });
 
 export type AiProfileAnalysis = z.infer<typeof aiProfileAnalysisSchema>;
@@ -141,6 +146,10 @@ function normalizeJsonPayload(rawContent: string) {
     .trim();
 }
 
+function normalizeNarrativeField(value: string | string[]) {
+  return Array.isArray(value) ? value.join(" ") : value;
+}
+
 export async function generateMistralProfileAnalysis(
   profile: PremedProfileInput,
   score: ScoreComputation,
@@ -160,6 +169,8 @@ export async function generateMistralProfileAnalysis(
     "Treat the deterministic score as the primary benchmark and explain it rather than overriding it.",
     "Paid clinical work is helpful context but does not count toward the core clinical volunteer-hour benchmark in this app.",
     "Shadowing is most useful in roughly the 40 to 80 hour range; more than 80 hours should be treated as diminishing returns, not a major extra advantage.",
+    "Do not call a metric below target if it is already at or above the stated target.",
+    "Do not tell the applicant to replace paid clinical work; instead say to add more volunteer clinical hours if needed.",
     "Be more skeptical than flattering. Average profiles should not sound exceptional.",
     "Return only a JSON object with the exact requested keys.",
   ].join(" ");
@@ -227,6 +238,10 @@ export async function generateMistralProfileAnalysis(
 
   return {
     model: config.model,
-    analysis: parsed,
+    analysis: {
+      ...parsed,
+      supportingRationale: normalizeNarrativeField(parsed.supportingRationale),
+      cautionNote: normalizeNarrativeField(parsed.cautionNote),
+    },
   };
 }
