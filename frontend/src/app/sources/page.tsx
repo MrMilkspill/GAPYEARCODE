@@ -25,16 +25,17 @@ export default function SourcesPage() {
             <p className="max-w-3xl text-lg text-muted-foreground">
               This page separates official national data from heuristic planning
               ranges. The academic anchors are tied to current AAMC and AACOM
-              releases. Hour-based experience cutoffs are transparent planning
-              bands, not claims that every school uses the same hard minimum. In
-              this stricter version, paid clinical work is tracked separately from
-              core clinical volunteer hours, the weights lean harder on
-              academics plus sustained clinical and service exposure, and
-              shadowing is treated as most useful in roughly the 40 to 80 hour
-              range rather than as a category where more is always better.
-              Recommendation letters are also graded from a structured package
-              instead of a vague self-rating, while application-material timing
-              is buffered when the planned cycle is still far away.
+              releases. These ranges are transparent planning heuristics
+              informed by AAMC data, AMCAS activity categories, and university
+              advising guidance. They are not official national cutoffs. AMCAS
+              separates volunteer clinical and paid clinical categories, so the
+              app uses volunteer clinical hours as the primary benchmark while
+              keeping paid clinical hours as meaningful supporting context.
+              Shadowing is treated as most useful in roughly the 40 to 80 hour
+              range, where additional hours add little benefit. Recommendation
+              letters are also graded from a structured package instead of a
+              vague self-rating, while application-material timing is buffered
+              when the planned cycle is still far away.
             </p>
           </div>
 
@@ -58,8 +59,9 @@ export default function SourcesPage() {
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
                 Official MD and DO academic data is preferred whenever it exists.
-                When no single national number exists, the app labels the cutoff as
-                heuristic and keeps it configurable.
+                When no single national number exists, the app labels the range
+                as heuristic and keeps it configurable rather than presenting it
+                as an official threshold.
               </CardContent>
             </Card>
             <Card className="border-border/70 bg-card/95 shadow-sm">
@@ -69,8 +71,9 @@ export default function SourcesPage() {
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
                 The app is meant to be transparent. You should be able to see what
-                is official data, what is advisor-style benchmarking, and where the
-                gap-year recommendation is coming from.
+                is official data, what reflects AMCAS category structure, what is
+                advisor-style benchmarking, and where the gap-year recommendation
+                is coming from.
               </CardContent>
             </Card>
           </div>

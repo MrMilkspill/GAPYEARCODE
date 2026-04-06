@@ -1,14 +1,18 @@
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+
+LOCAL_DEV_ORIGIN_REGEX = r"https?://(?:localhost|127\.0\.0\.1)(?::\d+)?"
 
 
 class Settings(BaseSettings):
     supabase_url: str
     supabase_anon_key: str
     supabase_service_role_key: str
-    allowed_origins: list[str] = ["http://localhost:3000"]
+    allowed_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
     allowed_origin_regex: str | None = None
     mistral_api_key: str | None = None
     mistral_model: str = "mistral-small-latest"
@@ -31,7 +35,9 @@ class Settings(BaseSettings):
     def normalize_allowed_origin_regex(cls, value: str | None) -> str | None:
         if isinstance(value, str):
             value = value.strip()
-        return value or None
+        if not value:
+            return LOCAL_DEV_ORIGIN_REGEX
+        return f"(?:{LOCAL_DEV_ORIGIN_REGEX}|{value})"
 
 
 @lru_cache

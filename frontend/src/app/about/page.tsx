@@ -11,17 +11,20 @@ const benchmarkRows = [
   ["MCAT", "515+ excellent, 510+ strong, 505+ moderate"],
   [
     "Clinical",
-    "150+ clinical volunteer hours strong, 300+ excellent; paid clinical work is tracked separately as context.",
+    "Volunteer clinical hours are benchmarked separately from paid clinical hours. Around 150+ volunteer hours is a strong planning range in this model, while paid clinical remains supporting clinical context.",
   ],
-  ["Service", "250+ non-clinical service hours strong, 450+ excellent"],
+  [
+    "Service",
+    "250+ non-clinical service hours is a strong planning range in this model, but AAMC-reported class averages are higher and are not minimums.",
+  ],
   [
     "Shadowing",
-    "Roughly 40 to 80 hours is the optimal band; more than 80 actively grades down instead of looking better.",
+    "Roughly 40 to 80 hours is the planning range; additional hours beyond that range provide little added benefit.",
   ],
-  ["Research", "300+ stronger baseline, higher for research-heavy lists"],
+  ["Research", "Research importance varies by school type; this model uses a higher bar for research-heavy lists."],
   [
     "Letters",
-    "Committee letter is strongest; otherwise the model looks for about 2 science-faculty letters plus 1 to 2 additional letters from non-science, research, or clinical/service supervisors.",
+    "Committee letter is strongest; otherwise the model uses a conservative common pattern of about 2 science-faculty letters plus 1 to 2 additional letters from non-science, research, or clinical/service supervisors.",
   ],
 ];
 
@@ -78,20 +81,21 @@ export default function AboutPage() {
               <CardContent className="space-y-3 text-sm leading-6 text-muted-foreground">
                 <p>
                   The model recommends extra time when one or more high-value areas
-                  are underdeveloped, especially academics, clinical exposure, or
-                  non-clinical service.
+                  would benefit from more development, especially academics,
+                  volunteer clinical exposure, or non-clinical service.
                 </p>
                 <p>
-                  In this stricter version, paid clinical work helps as context,
-                  but the core clinical benchmark is based on clinical volunteer
-                  hours rather than a combined total.
+                  AMCAS separates volunteer clinical and paid clinical categories.
+                  In this version, paid clinical work remains meaningful context,
+                  but the primary clinical benchmark is based on volunteer
+                  clinical hours rather than a combined total.
                 </p>
                 <p>
                   The weights are intentionally tilted toward academics, core
                   clinical volunteering, and non-clinical service. Shadowing is
                   still tracked, but it is low-weight and capped around a
                   reasonable planning band instead of being rewarded endlessly.
-                  Going above that band does not help the score.
+                  Going above that band adds little benefit.
                 </p>
                 <p>
                   Service and leadership can partly offset weaker areas, but the
@@ -107,7 +111,7 @@ export default function AboutPage() {
                 <p>
                   MD versus DO interest and research-heavy or service-heavy school
                   preferences adjust interpretation slightly, but they do not erase
-                  major gaps.
+                  larger gaps.
                 </p>
               </CardContent>
             </Card>
@@ -144,8 +148,9 @@ export default function AboutPage() {
                 </div>
               ))}
               <p className="rounded-2xl bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
-                These bands are source-backed planning cutoffs, not claims about a
-                single universal admissions minimum. The full AAMC, AACOM, and
+                These ranges are transparent planning heuristics informed by AAMC
+                data, AMCAS activity categories, and university advising guidance.
+                They are not official national cutoffs. The full AAMC, AACOM, and
                 university-advising source list is on the Sources page.
               </p>
             </CardContent>

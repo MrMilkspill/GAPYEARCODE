@@ -17,8 +17,8 @@ def format_hours(value: int) -> str:
 def build_md_academic_interpretation(profile: PremedProfileInput) -> str:
     if profile.mcatTotal == 0:
         if profile.cumulativeGpa >= 3.81:
-            return "The GPA is already at or above the recent MD matriculant mean, but there is no MCAT yet, so the academic read is still incomplete."
-        return "The GPA is still below the recent MD matriculant mean, and there is no MCAT yet, so MD academic competitiveness is not fully established."
+            return "The GPA is already at or above the recent MD matriculant mean, but there is no MCAT yet, so the academic picture is still incomplete."
+        return "The GPA is below the recent MD matriculant mean, and there is no MCAT yet, so the academic picture is still incomplete."
 
     gpa_gap = profile.cumulativeGpa - 3.81
     mcat_gap = profile.mcatTotal - 512.1
@@ -26,17 +26,17 @@ def build_md_academic_interpretation(profile: PremedProfileInput) -> str:
     if gpa_gap >= 0 and mcat_gap >= 0:
         return "Both GPA and MCAT are at or above recent MD matriculant means, so the academic side is a relative strength on paper."
     if gpa_gap >= -0.06 and mcat_gap >= -2:
-        return "The academics are in range of recent MD matriculant norms, but they are not clearly above the national MD bar."
+        return "The academics are close to recent MD matriculant norms, even if they are not clearly above the national MD averages."
     if gpa_gap >= -0.15 or mcat_gap >= -4:
-        return "The academics are respectable but still below recent MD matriculant means, which makes the rest of the profile matter more."
-    return "The academics are materially below recent MD matriculant means, so stronger experiences alone are less likely to erase that gap."
+        return "The academics are below recent MD matriculant means, which makes the rest of the profile matter more in a holistic review."
+    return "The academics sit meaningfully below recent MD matriculant means, so this remains one of the clearer areas for improvement."
 
 
 def build_do_academic_interpretation(profile: PremedProfileInput) -> str:
     if profile.mcatTotal == 0:
         if profile.cumulativeGpa >= 3.6 and profile.scienceGpa >= 3.52:
-            return "The GPA profile is around recent DO entering-student averages, but there is no MCAT yet, so the academic read is still incomplete."
-        return "The GPA profile is still below recent DO entering-student averages, and there is no MCAT yet, so the academic read remains incomplete."
+            return "The GPA profile is around recent DO entering-student averages, but there is no MCAT yet, so the academic picture is still incomplete."
+        return "The GPA profile is below recent DO entering-student averages, and there is no MCAT yet, so the academic picture remains incomplete."
 
     overall_gap = profile.cumulativeGpa - 3.6
     science_gap = profile.scienceGpa - 3.52
@@ -46,39 +46,59 @@ def build_do_academic_interpretation(profile: PremedProfileInput) -> str:
         return "The GPA and MCAT profile is at or above recent DO entering-student averages, so academics are supportive for a DO-leaning list."
     if overall_gap >= -0.08 and science_gap >= -0.08 and mcat_gap >= -2:
         return "The academics are close to recent DO entering-student averages, which keeps a DO pathway realistic on paper."
-    return "The academics are still below recent DO entering-student averages, so more runway or a narrower school strategy may be needed."
+    return "The academics are below recent DO entering-student averages, so more runway or a narrower school strategy may be helpful."
 
 
 def build_clinical_interpretation(profile: PremedProfileInput) -> str:
+    prefix = (
+        "AMCAS separates clinical experience into volunteer clinical and paid clinical categories. "
+    )
     if 100 <= profile.clinicalVolunteerHours <= 200:
-        return "Volunteer clinical exposure already sits inside a common advising range. Paid clinical work helps the story, but this app still treats volunteer hours as the core benchmark."
+        return (
+            prefix
+            + "Volunteer clinical exposure already sits inside a common advising range. "
+            + "Paid clinical experience is not included in the volunteer-clinical subtotal, but it remains a valid and meaningful form of clinical exposure reviewed by admissions committees."
+        )
     if profile.clinicalVolunteerHours > 200:
-        return "Volunteer clinical exposure is already above a common advising range. Additional paid clinical work is useful context, but it does not need to substitute for volunteer exposure here."
+        return (
+            prefix
+            + "Volunteer clinical exposure is already above a common advising range. "
+            + "Paid clinical work remains useful context, but it does not need to substitute for the volunteer-clinical subtotal here."
+        )
     if profile.paidClinicalHours > 0:
-        return "Volunteer clinical exposure is still light relative to common advising ranges, even though paid clinical work adds favorable context."
-    return "Volunteer clinical exposure is still light relative to common advising ranges, and there is not much paid clinical context to offset that."
+        return (
+            prefix
+            + "Volunteer clinical exposure is still below common advising ranges, even though the paid clinical work adds meaningful supporting context."
+        )
+    return prefix + "Volunteer clinical exposure is still below common advising ranges, and there is no paid clinical context entered."
 
 
 def build_service_interpretation(profile: PremedProfileInput) -> str:
-    if profile.nonClinicalVolunteerHours >= 717:
-        return "Service volume is already at or above the recent MD matriculant average. That does not guarantee anything, but it is no longer a weakness on raw hours."
-    if profile.nonClinicalVolunteerHours >= 450:
-        return "Service volume is substantial, even though it still sits below the recent MD matriculant average community-service level."
-    if profile.nonClinicalVolunteerHours >= 250:
-        return "Service is meaningful, but it is still well below the recent MD matriculant average, so it should not be framed as a standout strength yet."
-    if profile.nonClinicalVolunteerHours >= 100:
-        return "Service is present but still light compared with recent matriculant averages, especially for service-oriented school lists."
-    return "Non-clinical service is thin relative to recent matriculant averages and remains one of the easier ways to improve the profile."
+    if profile.nonClinicalVolunteerHours >= 600:
+        range_label = "a very substantial sustained-service range"
+    elif profile.nonClinicalVolunteerHours >= 300:
+        range_label = "a strong sustained-service range"
+    elif profile.nonClinicalVolunteerHours >= 150:
+        range_label = "a developing to solid service range"
+    else:
+        range_label = "an earlier service range with room to grow"
+
+    return (
+        "Non-clinical service hours demonstrate meaningful community engagement. "
+        "While AAMC-reported averages are higher, they represent broad class averages rather than expected minimums. "
+        f"This profile currently sits in {range_label}. "
+        "Consistency, community-facing impact, and sustained involvement matter more than matching a class-wide mean."
+    )
 
 
 def build_shadowing_interpretation(profile: PremedProfileInput) -> str:
     if profile.shadowingTotalHours > 80:
-        return "Shadowing volume is already above the usual advising band, so more hours here are likely yielding diminishing returns instead of solving a bigger weakness."
+        return "Shadowing is already above a reasonable planning range, and additional hours are likely to provide little added benefit."
     if profile.shadowingTotalHours >= 40:
-        return "Shadowing is already inside a common advising band, which is usually enough for this category unless breadth is unusually narrow."
+        return "Shadowing is already within a reasonable planning range, which is usually enough for this category unless breadth is unusually narrow."
     if profile.shadowingTotalHours >= 20:
-        return "Shadowing is present but still below the common advising band, though AAMC makes clear that shadowing is not always required if clinical exposure is otherwise strong."
-    return "Shadowing is thin, but this is usually a smaller problem than weak clinical volunteering or weak service because AAMC treats shadowing as partly substitutable."
+        return "Shadowing is present but still below the planning range, though AAMC makes clear that shadowing is not always required if clinical exposure is otherwise strong."
+    return "Shadowing is still limited, but this is usually a smaller area for improvement than weak volunteer clinical or non-clinical service because AAMC treats shadowing as partly substitutable."
 
 
 def build_research_interpretation(profile: PremedProfileInput) -> str:
@@ -89,13 +109,13 @@ def build_research_interpretation(profile: PremedProfileInput) -> str:
             return "For a research-heavy school list, the research side is credible and includes at least one tangible output."
         if profile.researchHours >= 200:
             return "There is real research exposure, but a research-heavy school list would usually benefit from more depth or output."
-        return "Research is too thin for a clearly research-heavy strategy, even though AAMC says expectations vary by school mission."
+        return "Research importance varies by school type, and a clearly research-heavy strategy would usually benefit from more depth here."
 
     if profile.researchHours >= 150:
-        return "There is enough research exposure to avoid looking blank in this area for many general school lists."
+        return "There is enough research exposure to support many general school lists, while still recognizing that research importance varies by school type."
     if profile.researchHours > 0:
-        return "There is some research, but it is still shallow enough that mission-fit will matter a lot."
-    return "There is no research entered. That is not fatal for every school, but it narrows flexibility because AAMC says most accepted applicants have some research."
+        return "There is some research exposure, which can still be useful even though its importance varies by school mission."
+    return "No research is entered. That does not rule out service-oriented paths, but it can reduce flexibility because research-heavy schools tend to value it more."
 
 
 def build_letters_interpretation(profile: PremedProfileInput) -> str:
@@ -108,16 +128,16 @@ def build_letters_interpretation(profile: PremedProfileInput) -> str:
     )
 
     if profile.committeeLetter:
-        return "A committee letter or packet is already in place, which is usually the cleanest letter structure for many schools."
+        return "A committee letter or packet is already in place, which fits a conservative common pattern used by many schools."
     if profile.scienceProfessorLetters >= 2 and (
         profile.nonScienceProfessorLetters >= 1 or support_source_count >= 2
     ):
-        return "The letter package already matches a common baseline of two science-faculty letters plus added non-science or mentor support."
+        return "The letter package already matches a conservative common pattern of two science-faculty letters plus added non-science or mentor support."
     if profile.scienceProfessorLetters >= 2:
-        return "The science-faculty baseline is mostly there, but the package still needs more breadth from non-science or supervisor/research writers."
+        return "The science-faculty core is in place, but the package would be stronger with more breadth from non-science or supervisor/research writers."
     if profile.scienceProfessorLetters >= 1:
-        return "The package has started, but it is still short of the common two-science-letter baseline used by many advising offices."
-    return "The letter package is still too thin to treat as ready, even though exact requirements vary by school."
+        return "The package has started, but it is still short of the conservative common pattern many advising offices suggest."
+    return "The letter package is still early, even though exact requirements vary by school."
 
 
 def build_source_backed_comparisons(profile: PremedProfileInput) -> list[AiSourceBackedComparison]:
@@ -164,10 +184,10 @@ def build_source_backed_comparisons(profile: PremedProfileInput) -> list[AiSourc
             AiSourceBackedComparison(
                 id="clinical-context",
                 area="clinical",
-                label="Clinical volunteering versus paid clinical context",
+                label="Volunteer clinical benchmark with paid clinical context",
                 evidenceType="official_guidance",
                 applicantValue=f"{format_hours(profile.clinicalVolunteerHours)} volunteer clinical | {format_hours(profile.paidClinicalHours)} paid clinical",
-                benchmarkFact="UVA prehealth advising suggests roughly 100 to 200 hours of clinical volunteering or work. AMCAS separately tracks Community Service/Volunteer - Medical/Clinical and Paid Employment - Medical/Clinical experiences, and AAMC's 2023 admissions-officer survey placed both volunteer and paid clinical experiences in the highest-importance experience group.",
+                benchmarkFact="AMCAS separates clinical experience into volunteer clinical and paid clinical categories. UVA prehealth advising suggests roughly 100 to 200 hours of clinical volunteering or work, and AAMC's 2023 admissions-officer survey placed both volunteer clinical and paid clinical experiences in the highest-importance experience group.",
                 interpretation=build_clinical_interpretation(profile),
                 sourceIds=["uva-clinical-experiences", "amcas-work-activities-2027", "aamc-mcat-selection-2026"],
             ),
@@ -177,7 +197,7 @@ def build_source_backed_comparisons(profile: PremedProfileInput) -> list[AiSourc
                 label="Non-clinical service context",
                 evidenceType="official_data",
                 applicantValue=f"{format_hours(profile.nonClinicalVolunteerHours)} non-clinical service",
-                benchmarkFact="AAMC reported an average of 717 community-service hours per recent MD matriculant and separately emphasizes sustained nonmedical volunteer work over scattered short-term activity.",
+                benchmarkFact="AAMC reported an average of 717 community-service hours across recent MD matriculants. That figure is a class-wide mean, not a requirement or expected minimum, and it can be pulled upward by applicants with unusually high totals such as gap years or full-time service roles. AAMC also emphasizes sustained nonmedical volunteer work over scattered short-term activity.",
                 interpretation=build_service_interpretation(profile),
                 sourceIds=["aamc-enrollment-2025", "aamc-volunteer"],
             ),
@@ -211,7 +231,7 @@ def build_source_backed_comparisons(profile: PremedProfileInput) -> list[AiSourc
                     if profile.committeeLetter
                     else f"{profile.scienceProfessorLetters} science faculty | {profile.nonScienceProfessorLetters} non-science faculty | {profile.researchMentorLetters} research | {profile.clinicalSupervisorLetters} clinical supervisor | {profile.serviceWorkSupervisorLetters} service/work supervisor"
                 ),
-                benchmarkFact="AAMC says letter requirements vary by school, but its advising guidance highlights two science instructors as especially important. A common advising baseline is two science-faculty letters plus one non-science or other mentor/supervisor letter, with committee letters or packets often treated as the cleanest format.",
+                benchmarkFact="AAMC says letter requirements vary by school, but its advising guidance highlights two science instructors as especially important. A conservative common pattern is two science-faculty letters plus one non-science or other mentor/supervisor letter, with committee letters or packets often treated as the cleanest format.",
                 interpretation=build_letters_interpretation(profile),
                 sourceIds=["amcas-letters-types", "aamc-choosing-letter-writers", "louisville-letters-brochure"],
             ),

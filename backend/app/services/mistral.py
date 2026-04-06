@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+from pydantic import ValidationError
 
 from app.core.config import get_settings
 from app.models.analysis import AiProfileAnalysis
@@ -168,10 +169,23 @@ async def generate_profile_analysis(
     system_prompt = " ".join(
         [
             load_system_prompt(),
-            "Use only the supplied applicant data, score breakdown, and source-backed comparison facts.",
+            "Use only the supplied applicant data, score breakdown, and published comparison facts.",
             "Do not override the deterministic score. Explain it.",
-            "Paid clinical work is helpful context but does not count toward the core clinical volunteer-hour benchmark in this app.",
-            "Shadowing is most useful in roughly the 40 to 80 hour range; more than 80 hours should be treated as diminishing returns, not a major extra advantage.",
+            "AMCAS separates clinical experience into volunteer clinical and paid clinical categories.",
+            "Use volunteer clinical hours as the primary clinical benchmark when discussing the app's scoring model.",
+            "Paid clinical experience is not included in the volunteer-clinical subtotal, but it remains a valid and meaningful form of clinical exposure reviewed by admissions committees.",
+            "For non-clinical service, explain that the AAMC ~700-hour figure is a class-wide matriculant mean, not a requirement or expected minimum, and that it is influenced by some high-hour applicants such as gap-year or full-time service roles.",
+            "If service hours are below that mean, phrase it as: This falls below AAMC-reported averages, which reflect broad class data rather than expected individual benchmarks.",
+            "Do not imply that applicants need to match the AAMC service-hour mean. Emphasize quality, consistency, and impact of service rather than raw totals alone.",
+            "These ranges are transparent planning heuristics informed by AAMC data, AMCAS activity categories, and university advising guidance. They are not official national cutoffs.",
+            "Shadowing is tracked within a reasonable planning range and has diminishing returns beyond that range. Additional hours provide little added benefit.",
+            "Do not suggest that 100+ shadowing hours materially improve competitiveness.",
+            "Discuss leadership in terms of responsibility, initiative, and impact rather than rigid hour requirements alone.",
+            "Discuss research as mission-dependent. Research importance varies by school type, especially research-heavy versus service-oriented schools.",
+            "Describe recommendation-letter structure as a conservative common pattern rather than a universal requirement.",
+            "Frame GPA and MCAT relative to published averages and holistic review, avoiding deterministic conclusions.",
+            "Use balanced phrasing such as area for improvement, moderate strength, or current strength.",
+            "Avoid phrases such as below average, insufficient, or limiting factor.",
             "If you mention benchmark numbers or external facts, they must come directly from the supplied sourceBackedComparisons.",
             "If a comparison is marked as an advising heuristic rather than official data, say that explicitly.",
             "Every deepDiveSection must reference one or more comparisonIds that appear in the supplied sourceBackedComparisons.",
@@ -184,6 +198,7 @@ async def generate_profile_analysis(
             "Analyze this pre-med profile and return JSON with exactly these keys:",
             "headline, verdict, supportingRationale, deepDiveSections, strongestSignals, limitingFactors, priorityActions, cautionNote.",
             "Each array should contain short plain-English bullet strings.",
+            "Even though the key name is limitingFactors, phrase those bullets as balanced areas to strengthen rather than alarmist red flags.",
             "Each deepDiveSection must be an object with title, body, and comparisonIds.",
             "Make the analysis more in-depth than a one-paragraph summary.",
             "Use concrete applicant numbers and only the provided benchmark facts.",
@@ -203,7 +218,11 @@ async def generate_profile_analysis(
     if not raw_content:
         raise RuntimeError("Mistral returned an empty analysis.")
 
-    parsed = AiProfileAnalysis.model_validate(json.loads(normalize_json_payload(raw_content)))
+    try:
+        parsed = AiProfileAnalysis.model_validate(json.loads(normalize_json_payload(raw_content)))
+    except (json.JSONDecodeError, ValidationError) as error:
+        raise RuntimeError(f"Mistral returned an invalid analysis payload: {error}") from error
+
     return {
         "model": settings.mistral_model,
         "analysis": {

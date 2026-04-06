@@ -257,11 +257,11 @@ def evaluate_academics(profile: PremedProfileInput, config: dict[str, Any]) -> d
         "highlights": [
             f"Cumulative GPA {profile.cumulativeGpa:.2f} and science GPA {profile.scienceGpa:.2f} set the academic baseline.",
             (
-                f"MCAT {profile.mcatTotal} supports typical readiness for many MD programs."
+                f"MCAT {profile.mcatTotal} sits in a supportive range relative to this model's academic benchmarks."
                 if profile.mcatTotal > 0 and profile.mcatTotal >= academics_config["mcatTotal"]["strong"]
-                else f"MCAT {profile.mcatTotal} still trails typical readiness for many MD programs."
+                else f"MCAT {profile.mcatTotal} sits below this model's current academic benchmark and remains an area to strengthen."
                 if profile.mcatTotal > 0
-                else "No MCAT score is entered, which lowers immediate application readiness."
+                else "No MCAT score is entered yet, so the academic picture is still incomplete."
             ),
             (
                 "An upward grade trend adds useful context."
@@ -282,12 +282,14 @@ def evaluate_clinical_exposure(profile: PremedProfileInput, config: dict[str, An
         "score": clamp(weighted_average([{"score": total_hours_score, "weight": 85}, {"score": types_score, "weight": 15}])),
         "benchmarkTarget": 72,
         "highlights": [
-            f"{clinical_hours} clinical volunteer hours drive the core clinical benchmark in this model.",
-            f"{types_count or 0} distinct clinical role type{'' if types_count == 1 else 's'} broadens the narrative.",
+            f"{clinical_hours} volunteer clinical hours set the primary clinical benchmark in this model.",
+            f"{types_count or 0} distinct clinical role type{'' if types_count == 1 else 's'} help show breadth of exposure.",
             (
-                f"{profile.paidClinicalHours} paid clinical hours are still favorable context, but they are scored separately and do not count toward the core clinical-hour benchmark."
+                "AMCAS separates clinical experience into volunteer clinical and paid clinical categories. "
+                f"{profile.paidClinicalHours} paid clinical hours are not included in the volunteer-clinical subtotal, "
+                "but they remain a valid and meaningful form of clinical exposure reviewed by admissions committees."
                 if profile.paidClinicalHours > 0
-                else "Paid clinical work is optional context here, but it is not used to inflate the core clinical-hour benchmark."
+                else "AMCAS separates volunteer clinical and paid clinical categories, so this benchmark tracks volunteer clinical hours without combining paid work into the same subtotal."
             ),
         ],
     }
@@ -303,13 +305,13 @@ def evaluate_service(profile: PremedProfileInput, config: dict[str, Any]) -> dic
         "score": clamp(weighted_average([{"score": total_score, "weight": 80}, {"score": categories_score, "weight": 20}]) + leadership_bonus),
         "benchmarkTarget": 78,
         "highlights": [
-            f"{profile.nonClinicalVolunteerHours} non-clinical service hours set the baseline here.",
+            f"{profile.nonClinicalVolunteerHours} non-clinical service hours show the current level of community engagement.",
             (
-                "Holding leadership in service roles adds depth beyond one-time service."
+                "Holding leadership in service roles adds evidence of sustained responsibility and initiative."
                 if profile.serviceLeadership
-                else "Leadership within service work would raise this category further."
+                else "Consistency and community-facing impact matter more here than stacking disconnected one-time activities."
             ),
-            f"{categories_count or 0} service categor{'y' if categories_count == 1 else 'ies'} shows the breadth of community engagement, but the hour bar is intentionally high because current AAMC matriculants report far more service on average.",
+            f"{categories_count or 0} service categor{'y' if categories_count == 1 else 'ies'} help show breadth. Non-clinical service hours demonstrate meaningful community engagement. While AAMC-reported averages are higher, they represent broad class averages rather than expected minimums.",
         ],
     }
 
@@ -339,12 +341,12 @@ def evaluate_research(profile: PremedProfileInput, config: dict[str, Any]) -> di
         ),
         "benchmarkTarget": 78 if profile.researchHeavyPreference else 65,
         "highlights": [
-            f"{profile.researchHours} research hours across {profile.researchProjectsCount} project{'' if profile.researchProjectsCount == 1 else 's'} set the baseline.",
+            f"{profile.researchHours} research hours across {profile.researchProjectsCount} project{'' if profile.researchProjectsCount == 1 else 's'} shape the current research profile.",
             f"{outputs} scholarly output{'' if outputs == 1 else 's'} from posters, abstracts, and publications adds credibility.",
             (
-                "Because the profile targets research-heavy schools, the research bar is higher."
+                "Because the profile targets research-heavy schools, research carries more weight in this model."
                 if profile.researchHeavyPreference
-                else "For service-forward school lists, research is important but not the dominant factor."
+                else "Research importance varies by school type, so it matters more for research-heavy lists than for service-oriented ones."
             ),
         ],
     }
@@ -352,15 +354,9 @@ def evaluate_research(profile: PremedProfileInput, config: dict[str, Any]) -> di
 
 def evaluate_shadowing(profile: PremedProfileInput, config: dict[str, Any]) -> dict[str, Any]:
     shadowing_config = config["thresholds"]["shadowing"]["totalHours"]
-    total_score = score_within_preferred_band(
-        profile.shadowingTotalHours,
+    total_score = score_from_thresholds(
+        min(profile.shadowingTotalHours, shadowing_config["excellent"]),
         shadowing_config,
-        shadowing_config["excellent"],
-        over_preferred_start_score=88,
-        soft_penalty_span=20,
-        hard_penalty_span=60,
-        soft_penalty_floor=72,
-        hard_penalty_floor=52,
     )
     physicians_score = score_from_thresholds(profile.physiciansShadowed, config["thresholds"]["shadowing"]["physicians"])
     virtual_share = 0 if profile.shadowingTotalHours == 0 else profile.virtualShadowingHours / profile.shadowingTotalHours
@@ -374,12 +370,12 @@ def evaluate_shadowing(profile: PremedProfileInput, config: dict[str, Any]) -> d
         "highlights": [
             f"{profile.shadowingTotalHours} total shadowing hours and {profile.physiciansShadowed} physician{'' if profile.physiciansShadowed == 1 else 's'} shadowed determine most of this score.",
             (
-                "This model treats roughly 40 to 80 shadowing hours as the useful target band, so more than 80 hours actively grades down instead of looking better."
+                "Shadowing is already beyond this model's reasonable planning range. Additional hours provide little added benefit."
                 if profile.shadowingTotalHours > shadowing_config["excellent"]
-                else "This model treats roughly 40 to 80 shadowing hours as the useful target band, with breadth across more than one physician helping the score."
+                else "Shadowing is tracked within a reasonable planning range, with breadth across more than one physician helping the score."
             ),
             (
-                "A heavy virtual-only shadowing mix weakens this section."
+                "A heavy virtual-only shadowing mix reduces how much this section supports the overall profile."
                 if virtual_share > 0.75 and profile.shadowingTotalHours < 40
                 else "The current shadowing mix is acceptable for a general readiness estimate."
             ),
@@ -443,7 +439,7 @@ def evaluate_recommendation_letters(profile: PremedProfileInput, config: dict[st
     return {
         "score": clamp(package_score),
         "summary": (
-            "A committee letter or packet is available, which usually satisfies or strengthens many schools' baseline letter structure."
+            "A committee letter or packet is available, which fits a conservative common pattern used by many schools."
             if profile.committeeLetter
             else f"{profile.scienceProfessorLetters} science-faculty letter{'' if profile.scienceProfessorLetters == 1 else 's'}, {profile.nonScienceProfessorLetters} non-science academic letter{'' if profile.nonScienceProfessorLetters == 1 else 's'}, and {support_source_count} outside support source{'' if support_source_count == 1 else 's'} define the current letter package."
         ),
@@ -489,12 +485,12 @@ def evaluate_leadership(profile: PremedProfileInput, config: dict[str, Any]) -> 
     roles_score = score_from_thresholds(profile.leadershipRolesCount, config["thresholds"]["leadership"]["roles"])
     level_score = config["thresholds"]["leadership"]["levelScores"][profile.highestLeadershipLevel]
     return {
-        "score": clamp(weighted_average([{"score": hours_score, "weight": 45}, {"score": roles_score, "weight": 25}, {"score": level_score, "weight": 30}])),
+        "score": clamp(weighted_average([{"score": hours_score, "weight": 30}, {"score": roles_score, "weight": 20}, {"score": level_score, "weight": 50}])),
         "benchmarkTarget": 68,
         "highlights": [
-            f"{profile.leadershipHours} leadership hours and {profile.leadershipRolesCount} titled role{'' if profile.leadershipRolesCount == 1 else 's'} support this area.",
-            f"{profile.highestLeadershipLevel.replace('_', ' ').lower()} is the highest leadership tier reported.",
-            "Meaningful responsibility matters more than title count alone in this category.",
+            f"{profile.leadershipHours} leadership hours across {profile.leadershipRolesCount} titled role{'' if profile.leadershipRolesCount == 1 else 's'} provide context, but raw hours are not the only signal here.",
+            f"{profile.highestLeadershipLevel.replace('_', ' ').lower()} is the highest responsibility tier reported.",
+            "Responsibility, initiative, and impact matter more here than hitting a rigid hour threshold.",
         ],
     }
 
@@ -585,12 +581,12 @@ def build_comparison_metrics(
         create_comparison_metric("scienceGpa", "Science GPA", profile.scienceGpa, academics_config["scienceGpa"]["strong"], "gpa"),
         create_comparison_metric("mcatTotal", "MCAT", profile.mcatTotal, academics_config["mcatTotal"]["strong"], "score"),
         create_comparison_metric("clinicalVolunteerHours", "Clinical volunteer hours", profile.clinicalVolunteerHours, config["thresholds"]["clinicalExposure"]["totalHours"]["strong"], "hours"),
-        create_comparison_metric("paidClinicalHours", "Paid clinical work", profile.paidClinicalHours, config["thresholds"]["employmentContext"]["paidClinicalHours"]["strong"], "hours"),
-        create_comparison_metric("serviceHours", "Service hours", profile.nonClinicalVolunteerHours, config["thresholds"]["service"]["totalHours"]["strong"], "hours"),
+        create_comparison_metric("paidClinicalHours", "Paid clinical hours", profile.paidClinicalHours, config["thresholds"]["employmentContext"]["paidClinicalHours"]["strong"], "hours"),
+        create_comparison_metric("serviceHours", "Non-clinical service hours", profile.nonClinicalVolunteerHours, config["thresholds"]["service"]["totalHours"]["strong"], "hours"),
         create_comparison_metric("researchHours", "Research hours", profile.researchHours, research_target, "hours"),
         {
             "key": "shadowingHours",
-            "label": "Shadowing hours (preferred 40-80)",
+            "label": "Shadowing hours (planning range 40-80)",
             "userValue": profile.shadowingTotalHours,
             "targetValue": 60,
             "unit": "hours",
@@ -609,7 +605,7 @@ def get_category_summary(highlights: list[str]) -> str:
 def build_strengths(category_breakdown: list[dict[str, Any]], comparison_metrics: list[dict[str, Any]]) -> list[str]:
     category_strengths = [f"{item['label']} is a current strength." for item in sorted(category_breakdown, key=lambda item: item["score"], reverse=True)[:3]]
     metric_strengths = [
-        f"{metric['label']} is at or above the current benchmark target."
+        f"{metric['label']} is at or above the current planning target."
         for metric in comparison_metrics
         if metric["status"] == "ahead"
     ][:2]
@@ -618,7 +614,7 @@ def build_strengths(category_breakdown: list[dict[str, Any]], comparison_metrics
 
 def build_weaknesses(category_breakdown: list[dict[str, Any]]) -> list[str]:
     return [
-        f"{item['label']} is one of the main limiting factors right now."
+        f"{item['label']} is one of the main areas to strengthen in the current snapshot."
         for item in sorted(category_breakdown, key=lambda item: item["score"])[:3]
     ]
 
@@ -638,8 +634,8 @@ def build_improvement_plan(
         suggestions.append(
             {
                 "area": "Clinical exposure",
-                "target": f"Add about {round(gap)} more clinical volunteer hours to reach roughly {clinical_metric['targetValue']} core hours.",
-                "rationale": "This stricter model treats clinical volunteering as the core clinical-readiness signal and keeps paid clinical work as contextual support.",
+                "target": f"If you want to strengthen the volunteer-clinical benchmark, add about {round(gap)} more clinical volunteer hours to reach roughly {clinical_metric['targetValue']} core hours.",
+                "rationale": "AMCAS separates volunteer clinical and paid clinical categories. This model uses volunteer clinical hours as the primary benchmark and keeps paid clinical hours as supporting clinical context.",
                 "timeline": "Over the next 6 to 12 months",
             }
         )
@@ -651,7 +647,7 @@ def build_improvement_plan(
             {
                 "area": "Service",
                 "target": f"Build another {round(gap)} non-clinical service hours, ideally in a consistent community-facing role.",
-                "rationale": "Strong service helps round out the profile and matters especially for community-focused schools.",
+                "rationale": "Non-clinical service is most persuasive when it is consistent, community-facing, and sustained over time.",
                 "timeline": "Over the next 6 to 12 months",
             }
         )
@@ -672,7 +668,7 @@ def build_improvement_plan(
         suggestions.append(
             {
                 "area": "Time allocation",
-                "target": "Stop stacking more shadowing hours and redirect future time toward clinical volunteering, non-clinical service, or academic repair.",
+                "target": "Additional shadowing hours are unlikely to add much value here, so redirect future time toward clinical volunteering, non-clinical service, research, or academic repair.",
                 "rationale": "In this model, shadowing is most useful in roughly the 40 to 80 hour band and has diminishing returns beyond that point.",
                 "timeline": "Starting now",
             }
@@ -683,8 +679,8 @@ def build_improvement_plan(
         suggestions.append(
             {
                 "area": "Letters of recommendation",
-                "target": "Build toward a committee packet or at least 2 science-faculty letters plus 1 to 2 additional letters from a non-science professor, research mentor, or clinical/service supervisor.",
-                "rationale": "AAMC says requirements vary by school, but this model treats two science letters plus added outside support as the common baseline rather than relying only on a vague self-rating.",
+                "target": "Build toward a committee packet or a conservative common pattern of about 2 science-faculty letters plus 1 to 2 additional letters from a non-science professor, research mentor, or clinical/service supervisor.",
+                "rationale": "AAMC says requirements vary by school, so this model uses a conservative common pattern rather than a universal formula.",
                 "timeline": "Start identifying writers now and firm this up over the next 6 to 12 months"
                 if lead_years >= 2
                 else "Over the next 3 to 9 months",
@@ -700,7 +696,7 @@ def build_improvement_plan(
                 "target": f"Add roughly {round(gap)} research hours and aim for at least one tangible output if possible.",
                 "rationale": "Research-heavy school preferences raise the expected research bar."
                 if profile.researchHeavyPreference
-                else "More research is optional for many schools, but it can improve versatility.",
+                else "Research importance varies by school mission, but more depth here can still improve versatility.",
                 "timeline": "Over the next 6 to 12 months",
             }
         )
@@ -743,7 +739,7 @@ def build_improvement_plan(
         suggestions.append(
             {
                 "area": "Academic repair",
-                "target": "Protect every remaining science grade and consider post-bacc coursework if the GPA trend will remain below many MD medians.",
+                "target": "Protect every remaining science grade and consider post-bacc coursework if the GPA profile is likely to remain below many MD class medians.",
                 "rationale": "Extracurricular strength helps, but weaker academics should not stay unaddressed.",
                 "timeline": "Over the next 6 to 18 months",
             }
@@ -841,7 +837,7 @@ def build_explanation(
         else "likely two or more gap years recommended"
     )
     tier_label = competitiveness_tier.replace("_", " ").lower()
-    return f"{prediction_label} because the profile currently grades out as {tier_label}. The strongest areas are {top_areas}, while {bottom_areas} remain the biggest constraints. {strengths[0]} {weaknesses[0]}"
+    return f"{prediction_label} because the profile currently lands in the {tier_label} range. The strongest areas are {top_areas}, while {bottom_areas} are the main areas to strengthen. {strengths[0]} {weaknesses[0]}"
 
 
 def apply_overall_calibration(raw_weighted_score: float, category_scores: dict[str, float], config: dict[str, Any]) -> float:
@@ -930,8 +926,9 @@ def calculate_profile_readiness(profile: PremedProfileInput, config: dict[str, A
         "disclaimers": [
             "This tool estimates readiness. It does not guarantee admission.",
             "Medical school admissions are holistic and school-dependent.",
-            "In this stricter model, paid clinical work is treated as contextual support rather than part of the core clinical volunteer-hour benchmark.",
-            "Shadowing is treated as most useful in roughly the 40 to 80 hour range, so more than 80 hours does not automatically improve the score.",
+            "Volunteer clinical, paid clinical, non-clinical service, and shadowing are tracked as separate categories rather than combined into one subtotal.",
+            "AMCAS separates volunteer clinical and paid clinical categories. This model uses volunteer clinical hours as the primary benchmark and treats paid clinical work as supporting clinical context.",
+            "Shadowing is treated as most useful in roughly the 40 to 80 hour range, so additional hours beyond that range provide little added benefit.",
             "Use this score as a planning aid alongside advising, school research, and personal judgment.",
         ],
         "narrative": {

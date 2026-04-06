@@ -12,6 +12,11 @@ export class ApiError extends Error {
 }
 
 
+function isLocalBackendUrl(baseUrl: string) {
+  return /:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(baseUrl);
+}
+
+
 function getBackendBaseUrl() {
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
@@ -26,7 +31,7 @@ function getBackendBaseUrl() {
   if (
     typeof window !== "undefined" &&
     window.location.hostname !== "localhost" &&
-    /:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalizedBaseUrl)
+    isLocalBackendUrl(normalizedBaseUrl)
   ) {
     throw new Error(
       "Backend API points to localhost in production. Set NEXT_PUBLIC_BACKEND_API_URL to your deployed backend URL.",
@@ -37,10 +42,26 @@ function getBackendBaseUrl() {
 }
 
 
+function getBackendUnavailableMessage(baseUrl: string) {
+  if (isLocalBackendUrl(baseUrl)) {
+    return (
+      `Backend API is unreachable at ${baseUrl}. ` +
+      "Start the backend server or set NEXT_PUBLIC_BACKEND_API_URL to your deployed backend URL."
+    );
+  }
+
+  return (
+    `Backend API is unreachable at ${baseUrl}. ` +
+    "Check NEXT_PUBLIC_BACKEND_API_URL and confirm the deployment is healthy."
+  );
+}
+
+
 export async function backendRequest<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const baseUrl = getBackendBaseUrl();
   const supabase = getSupabaseClient();
   const {
     data: { session },
@@ -56,11 +77,24 @@ export async function backendRequest<T>(
     headers.set("Authorization", `Bearer ${session.access_token}`);
   }
 
-  const response = await fetch(`${getBackendBaseUrl()}${path}`, {
-    ...init,
-    cache: init.cache ?? "no-store",
-    headers,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${baseUrl}${path}`, {
+      ...init,
+      cache: init.cache ?? "no-store",
+      headers,
+    });
+  } catch (error) {
+    const message =
+      error instanceof TypeError
+        ? getBackendUnavailableMessage(baseUrl)
+        : error instanceof Error
+          ? error.message
+          : "Unable to reach the backend API.";
+
+    throw new ApiError(message, 0);
+  }
 
   if (response.status === 204) {
     return undefined as T;

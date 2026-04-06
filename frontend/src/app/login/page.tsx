@@ -22,11 +22,11 @@ export default function LoginPage() {
             Secure profile storage
           </p>
           <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Save profiles, revisit results, and plan the right application timeline.
+            Save profiles, revisit results, and sign in with verified email access.
           </h1>
           <p className="max-w-xl text-lg text-muted-foreground">
-            Create an account to store multiple snapshots, update your activities as
-            they grow, and compare your readiness over time.
+            Create an account with email and password, confirm your email once,
+            store multiple snapshots, and compare your readiness over time.
           </p>
         </div>
         <Suspense

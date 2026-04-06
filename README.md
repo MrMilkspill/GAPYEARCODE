@@ -8,17 +8,18 @@ This repo is now split into a frontend and backend:
 └─ backend/    FastAPI API
 ```
 
-The frontend keeps the existing UI and page flow. Authentication is handled with Supabase magic links. Profile CRUD, readiness scoring, and Mistral analysis now live in the Python backend.
+The frontend keeps the existing UI and page flow. Authentication is handled with direct Supabase email/password sign-in, while account creation is proxied through the FastAPI backend so new accounts are auto-confirmed without an email verification step. Profile CRUD, readiness scoring, and Mistral analysis now live in the Python backend.
 
 ## Architecture
 
 - `frontend/`
   - Next.js 14 App Router
   - Tailwind CSS and shadcn/ui
-  - Supabase browser auth with magic-link login
+  - Supabase browser auth with direct email/password login
   - Client-side API calls to the FastAPI backend
 - `backend/`
   - FastAPI
+  - Account creation endpoint that auto-confirms Supabase users
   - Supabase Auth token verification
   - Supabase-backed profile storage via a `profiles` table
   - Mistral integration with a prompt file at `backend/app/prompts/system_prompt.txt`
@@ -74,6 +75,7 @@ uvicorn app.main:app --reload --port 8000
 The backend exposes:
 
 - `GET /health`
+- `POST /auth/register`
 - `POST /chat`
 - `GET /profiles`
 - `POST /profiles`
@@ -101,7 +103,7 @@ For the backend Vercel project:
    - `ALLOWED_ORIGINS`
    - `ALLOWED_ORIGIN_REGEX` if you want preview-domain support
    - `MISTRAL_API_KEY` if you want AI analysis enabled
-3. Vercel can detect the FastAPI app from [backend/index.py](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/backend/index.py).
+3. The backend Vercel entrypoint is [backend/api/[...route].py](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/backend/api/[...route].py) with rewrites defined in [backend/vercel.json](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/backend/vercel.json).
 
 For the frontend Vercel project:
 
@@ -112,22 +114,39 @@ For the frontend Vercel project:
    - `NEXT_PUBLIC_BACKEND_API_URL`
 3. Set `NEXT_PUBLIC_BACKEND_API_URL` to your deployed backend URL, not `http://localhost:8000`.
 
-Also add your production callback URL in Supabase Auth, for example:
+## Render deployment
 
-```text
-https://your-frontend.vercel.app/auth/callback
-```
+The repo now includes [render.yaml](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/render.yaml) for deploying the FastAPI backend as a Render web service from this monorepo.
+
+If you use Render Blueprints:
+
+1. In Render, choose `New +` -> `Blueprint`.
+2. Point it at this repository.
+3. Render will create one web service named `gapyearcode-api` using `backend/` as the root directory.
+4. Enter values for:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ALLOWED_ORIGINS`
+   - `ALLOWED_ORIGIN_REGEX`
+   - `MISTRAL_API_KEY` if you want AI analysis enabled
+5. Deploy and confirm the health check succeeds at `/health`.
+
+If you create the service manually instead of using the Blueprint:
+
+1. Create a new Render Web Service.
+2. Set the root directory to `backend`.
+3. Runtime: `Python 3`.
+4. Build command: `pip install -r requirements.txt`
+5. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+6. Health check path: `/health`
+7. Add the same environment variables listed above.
 
 ## Supabase setup
 
 1. Create a Supabase project.
-2. Enable Email auth and Magic Link sign-in in Supabase Auth.
-3. Add your local callback URL in Supabase Auth redirect settings:
-
-```text
-http://localhost:3000/auth/callback
-```
-
+2. Enable Email auth in Supabase Auth.
+3. The app now creates accounts through `POST /auth/register`, which uses the backend service-role key to create and auto-confirm new users. No verification email is required for normal sign-up.
 4. Run the SQL in [backend/app/sql/supabase_profiles.sql](/c:/Users/cspn_/OneDrive/Documents/GAPYEARCODE/backend/app/sql/supabase_profiles.sql) inside the Supabase SQL editor to create the `profiles` table and policies.
 
 The frontend uses the anon key for auth. The backend uses the service role key for profile storage access.
@@ -146,5 +165,5 @@ If `MISTRAL_API_KEY` is left blank, the backend still runs for auth, profile CRU
 
 - Prisma has been removed.
 - Next.js API routes have been removed.
-- The old credentials auth flow has been removed.
+- Direct credentials auth is handled with Supabase plus a backend account-creation endpoint.
 - The remaining scoring methodology pages in the frontend still render from the static benchmark/source data files used for the UI.

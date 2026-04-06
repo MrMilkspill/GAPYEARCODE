@@ -69,6 +69,9 @@ export default function RootLayout({
         geistMono.variable,
       )}
     >
+      <head>
+        <meta name="msvalidate.01" content="5EFEE22EE79EEF3F0064B5373A2D39EF" />
+      </head>
       <body className="min-h-screen antialiased">
         <Providers>{children}</Providers>
       </body>

@@ -28,7 +28,7 @@ const featureCards = [
   {
     title: "Transparent scoring",
     description:
-      "Every readiness estimate shows exactly how academics, clinical volunteer hours, service, research, and application readiness contribute.",
+      "Every readiness estimate shows exactly how academics, volunteer clinical hours, paid clinical context, service, research, and application readiness contribute.",
     icon: LineChart,
   },
   {
@@ -95,7 +95,7 @@ export default function HomePage() {
                   <CardContent className="p-5">
                     <p className="text-3xl font-semibold tracking-tight">150+</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Strong clinical volunteer-hour target in the default model
+                      Volunteer clinical planning marker in the default model
                     </p>
                   </CardContent>
                 </Card>
@@ -103,7 +103,7 @@ export default function HomePage() {
                   <CardContent className="p-5">
                     <p className="text-3xl font-semibold tracking-tight">40-80</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Shadowing band with diminishing returns beyond the range
+                      Shadowing planning range with little added benefit beyond it
                     </p>
                   </CardContent>
                 </Card>

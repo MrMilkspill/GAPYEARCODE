@@ -457,12 +457,12 @@ export function ProfileForm({
 
       <SectionCard
         title="Clinical Exposure"
-        description="This stricter model uses clinical volunteer hours as the core clinical benchmark. Paid clinical work is still helpful, but only as contextual support."
+        description="AMCAS separates volunteer clinical and paid clinical categories. This model uses volunteer clinical hours as the primary benchmark and keeps paid clinical hours as meaningful supporting context."
       >
         <div className="grid gap-4 md:grid-cols-2">
           <FieldGroup
             label="Paid clinical hours"
-            description="Helpful context only. These hours do not get added to the core clinical-hour benchmark."
+            description="Reviewed as meaningful clinical context. These hours do not get added to the volunteer-clinical subtotal."
             error={errors.paidClinicalHours?.message}
           >
             <Input
@@ -473,7 +473,7 @@ export function ProfileForm({
           </FieldGroup>
           <FieldGroup
             label="Clinical volunteer hours"
-            description="This is the clinical hour count used in the core readiness score."
+            description="This volunteer-clinical subtotal is the primary benchmark used in the readiness score."
             error={errors.clinicalVolunteerHours?.message}
           >
             <Input
@@ -549,7 +549,7 @@ export function ProfileForm({
 
       <SectionCard
         title="Shadowing"
-        description="Purely quantitative shadowing inputs: total hours, physician count, specialty mix, and virtual exposure."
+        description="Shadowing is tracked within a reasonable planning range. Additional hours beyond that range add little benefit."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FieldGroup
@@ -597,7 +597,7 @@ export function ProfileForm({
 
       <SectionCard
         title="Research"
-        description="The model compares time, project count, and outputs. It does not compare research essays."
+        description="The model compares time, project count, and outputs. Research importance varies by school type, especially for research-heavy lists."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FieldGroup
@@ -665,7 +665,7 @@ export function ProfileForm({
 
       <SectionCard
         title="Service"
-        description="Service scoring is intentionally strict and expects substantial long-term non-clinical community engagement."
+        description="Non-clinical service hours demonstrate meaningful community engagement. AAMC-reported averages are higher, but they reflect broad class data rather than expected minimums."
       >
         <div className="grid gap-4 md:grid-cols-2">
           <FieldGroup
@@ -755,7 +755,7 @@ export function ProfileForm({
 
       <SectionCard
         title="Leadership And Employment"
-        description="Leadership and work context remain scored, but only through measurable involvement and responsibility."
+        description="Leadership is evaluated through responsibility, initiative, and impact, while paid work adds context about sustained responsibility and time management."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FieldGroup
@@ -917,7 +917,7 @@ export function ProfileForm({
           <div className="space-y-1">
             <p className="text-sm font-medium">Letter package</p>
             <p className="text-xs text-muted-foreground">
-              Common baseline used in this model: a committee letter or roughly
+              Conservative common pattern used in this model: a committee letter or roughly
               2 science-faculty letters plus 1 to 2 additional letters from
               non-science faculty, research, or clinical/service supervisors.
               Schools vary, so this is a planning benchmark rather than a

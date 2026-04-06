@@ -10,10 +10,14 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 
-import { getSupabaseClient } from "@/lib/supabase/client";
+import {
+  getSupabaseClient,
+  getSupabaseConfigurationError,
+} from "@/lib/supabase/client";
 
 
 type AuthContextValue = {
+  configurationError: string | null;
   displayName: string;
   isAuthenticated: boolean;
   loading: boolean;
@@ -31,7 +35,10 @@ function deriveDisplayName(user: User | null) {
     return "Applicant";
   }
 
-  const metadataName = user.user_metadata.full_name;
+  const metadataName =
+    typeof user.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : null;
 
   if (typeof metadataName === "string" && metadataName.trim()) {
     return metadataName.trim();
@@ -44,8 +51,15 @@ function deriveDisplayName(user: User | null) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const configurationError = getSupabaseConfigurationError();
 
   useEffect(() => {
+    if (configurationError) {
+      setSession(null);
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     const supabase = getSupabaseClient();
 
@@ -73,21 +87,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [configurationError]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
+      configurationError,
       displayName: deriveDisplayName(session?.user ?? null),
       isAuthenticated: Boolean(session?.user),
       loading,
       session,
       signOut: async () => {
+        if (configurationError) {
+          return;
+        }
+
         const supabase = getSupabaseClient();
         await supabase.auth.signOut();
       },
       user: session?.user ?? null,
     }),
-    [loading, session],
+    [configurationError, loading, session],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

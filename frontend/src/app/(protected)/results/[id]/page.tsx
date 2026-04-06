@@ -212,10 +212,10 @@ export default function ResultPage({ params }: ResultPageProps) {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <SummaryMetricCard label="Cumulative GPA" value={profile.cumulativeGpa.toFixed(2)} helper="Latest saved snapshot" icon={<BookOpenText className="size-5" />} />
         <SummaryMetricCard label="MCAT" value={profile.mcatTotal ? `${profile.mcatTotal}` : "Not taken"} helper="Current total score" icon={<Activity className="size-5" />} />
-        <SummaryMetricCard label="Clinical volunteer hours" value={`${profile.clinicalVolunteerHours}`} helper="Core clinical benchmark; paid clinical work is scored separately as context" icon={<Stethoscope className="size-5" />} />
+        <SummaryMetricCard label="Clinical volunteer hours" value={`${profile.clinicalVolunteerHours}`} helper="Primary clinical benchmark; paid clinical hours are tracked separately as supporting context" icon={<Stethoscope className="size-5" />} />
         <SummaryMetricCard label="Service hours" value={`${profile.nonClinicalVolunteerHours}`} helper="Non-clinical community service" icon={<HeartHandshake className="size-5" />} />
         <SummaryMetricCard label="Research hours" value={`${profile.researchHours}`} helper="Total research time" icon={<Microscope className="size-5" />} />
-        <SummaryMetricCard label="Shadowing hours" value={`${profile.shadowingTotalHours}`} helper="Optimal planning band is roughly 40-80; more has diminishing returns" icon={<Eye className="size-5" />} />
+        <SummaryMetricCard label="Shadowing hours" value={`${profile.shadowingTotalHours}`} helper="Reasonable planning range is roughly 40-80; additional hours add little benefit" icon={<Eye className="size-5" />} />
         <SummaryMetricCard label="Leadership hours" value={`${profile.leadershipHours}`} helper="Structured leadership involvement" icon={<UserRoundCog className="size-5" />} />
       </div>
 
@@ -232,7 +232,7 @@ export default function ResultPage({ params }: ResultPageProps) {
           <CardHeader>
             <CardTitle>Benchmark progress chart</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Current values are shown as percent of the benchmark target for easier cross-category comparison.
+              Current values are shown as percent of the current planning target for easier cross-category comparison.
             </p>
           </CardHeader>
           <CardContent>
@@ -259,7 +259,7 @@ export default function ResultPage({ params }: ResultPageProps) {
         </Card>
         <Card className="border-border/70 bg-card/95 shadow-sm">
           <CardHeader>
-            <CardTitle>Weaknesses</CardTitle>
+            <CardTitle>Areas to strengthen</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {score.weaknesses.map((item) => (

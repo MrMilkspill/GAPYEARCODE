@@ -182,7 +182,7 @@ export default function DashboardPage() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <SummaryMetricCard label="Cumulative GPA" value={latestProfile.cumulativeGpa.toFixed(2)} helper="Latest saved profile" icon={<BookOpenText className="size-5" />} />
         <SummaryMetricCard label="MCAT" value={latestProfile.mcatTotal ? `${latestProfile.mcatTotal}` : "Not taken"} helper="Score snapshot" icon={<Activity className="size-5" />} />
-        <SummaryMetricCard label="Clinical volunteer hours" value={`${latestProfile.clinicalVolunteerHours}`} helper="Core clinical benchmark in this model" icon={<Stethoscope className="size-5" />} />
+        <SummaryMetricCard label="Clinical volunteer hours" value={`${latestProfile.clinicalVolunteerHours}`} helper="Primary clinical benchmark; paid clinical stays separate" icon={<Stethoscope className="size-5" />} />
         <SummaryMetricCard label="Service hours" value={`${latestProfile.nonClinicalVolunteerHours}`} helper="Non-clinical service" icon={<HeartHandshake className="size-5" />} />
       </div>
 

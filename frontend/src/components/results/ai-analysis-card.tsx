@@ -87,8 +87,8 @@ export function AiAnalysisCard({ profileId }: Props) {
           <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-background p-4">
             <p className="text-sm text-muted-foreground">
               Generate a model-written interpretation of your profile, strongest
-              signals, limiting factors, and next-best moves, plus a source-backed
-              comparison against published benchmark facts.
+              signals, areas to strengthen, and next-best moves, plus a
+              benchmark-based comparison against published facts.
             </p>
             <Button type="button" onClick={loadAnalysis}>
               <Sparkles className="size-4" />
@@ -175,7 +175,7 @@ export function AiAnalysisCard({ profileId }: Props) {
                 </ul>
               </div>
               <div className="rounded-2xl border border-border/70 bg-background p-4">
-                <p className="font-medium">Limiting factors</p>
+                <p className="font-medium">Areas to strengthen</p>
                 <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                   {analysis.limitingFactors.map((item) => (
                     <li key={item}>{item}</li>
@@ -194,7 +194,7 @@ export function AiAnalysisCard({ profileId }: Props) {
 
             <div className="space-y-4 rounded-2xl border border-border/70 bg-background p-4">
               <div className="space-y-1">
-                <p className="font-medium">Source-backed benchmark facts</p>
+                <p className="font-medium">Published benchmark facts</p>
                 <p className="text-sm text-muted-foreground">
                   These facts are deterministic. The model can interpret them, but
                   it does not get to invent them.

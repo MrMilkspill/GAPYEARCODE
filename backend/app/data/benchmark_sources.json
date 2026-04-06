@@ -83,9 +83,11 @@
       "keyStats": [
         "Mean GPA: applicants 3.67, matriculants 3.81.",
         "Mean MCAT: applicants 506.3, matriculants 512.1.",
-        "Average community service per matriculant: 717 hours.",
+        "Average community service across matriculants: 717 hours.",
+        "That 717-hour figure is a class-wide mean, not a requirement, cutoff, or expected minimum for individual applicants.",
         "Median undergraduate GPA for matriculants: 3.87."
-      ]
+      ],
+      "note": "Class-wide means can be pulled upward by applicants with very high totals, including some with gap years or full-time service roles. The app does not treat 717 hours as an individual target."
     },
     {
       "id": "aamc-mcat-selection-2026",
@@ -122,7 +124,7 @@
         "AMCAS lists Community Service/Volunteer - Medical/Clinical and Paid Employment - Medical/Clinical as separate experience types.",
         "AMCAS records completed and anticipated hours for each experience entry separately rather than collapsing paid and volunteer experience into one bucket."
       ],
-      "note": "This separation does not prove that paid clinical work is unimportant. It supports the app's stricter decision to track volunteer clinical hours as the core benchmark and paid clinical work as supporting context."
+      "note": "AMCAS separates clinical experience into volunteer clinical and paid clinical categories. Paid clinical experience is not included in the volunteer-clinical subtotal, but it remains a valid and meaningful form of clinical exposure reviewed by admissions committees."
     },
     {
       "id": "aacom-admissions-2024",
@@ -266,24 +268,24 @@
       "detail": "MD academic anchors come from current AAMC applicant and matriculant data plus the AAMC 2026 MCAT/GPA selection guide. DO adjustments come from current AACOM entering-student averages and AACOM trend reports."
     },
     {
-      "title": "Experience-hour cutoffs are planning heuristics",
-      "detail": "AAMC and AACOM do not publish one universal national cutoff for clinical, research, service, or shadowing hours. Those bands are intentionally transparent heuristics informed by AAMC guidance, AMCAS activity categories, and respected university prehealth advising pages."
+      "title": "Experience ranges are planning heuristics",
+      "detail": "These ranges are transparent planning heuristics informed by AAMC data, AMCAS activity categories, and university advising guidance. They are not official national cutoffs."
     },
     {
       "title": "Clinical volunteering and paid clinical work are separated",
-      "detail": "AMCAS separates volunteer medical/clinical work from paid medical/clinical work. In this version of the app, volunteer clinical hours set the core clinical benchmark, while paid clinical work adds smaller contextual support instead of inflating the main hour total."
+      "detail": "AMCAS separates clinical experience into volunteer clinical and paid clinical categories. In this version of the app, volunteer clinical hours set the primary clinical benchmark, while paid clinical work remains valid supporting clinical context instead of being merged into the volunteer subtotal."
     },
     {
-      "title": "Weights follow a stricter importance order",
-      "detail": "The current model leans most heavily on academics, then clinical volunteering and non-clinical service. Shadowing and research stay lighter because AAMC guidance treats shadowing as substitutable and research expectations as mission-dependent."
+      "title": "The heuristic uses a transparent weight order",
+      "detail": "This app weights academics most heavily, followed by volunteer clinical exposure and non-clinical service. Shadowing and research stay lighter in this model because AAMC guidance treats shadowing as more substitutable and research expectations as mission-dependent."
     },
     {
       "title": "The backend keeps these values configurable",
       "detail": "The app stores its thresholds centrally so they can be revised as new AAMC or AACOM releases arrive, or if an advisor wants to calibrate the model differently."
     },
     {
-      "title": "Letter grading uses a common baseline, not a fake universal rule",
-      "detail": "AAMC says letter requirements vary by school. This version therefore uses a conservative common baseline: a committee letter or about two science-faculty letters plus one to two added letters from non-science, research, or clinical/service supervisors."
+      "title": "Letter grading uses a conservative common pattern",
+      "detail": "AAMC says letter requirements vary by school. This version therefore uses a conservative common pattern: a committee letter or about two science-faculty letters plus one to two added letters from non-science, research, or clinical/service supervisors."
     }
   ],
   "benchmarkDerivationNotes": [
@@ -299,13 +301,13 @@
     },
     {
       "category": "Clinical and service",
-      "currentBands": "Clinical volunteering is benchmarked separately from paid clinical work, with a strong planning band around 150 hours, while non-clinical service uses a strong planning band around 250 hours.",
-      "rationale": "This is an inference from sources, not an official national cutoff. UVA advising suggests roughly 100 to 200 hours of clinical volunteering or work, AMCAS separates volunteer medical/clinical activity from paid medical/clinical employment, and AAMC's 2025 MD matriculant data reports 717 average community-service hours. The app uses those facts to keep the model demanding without treating the matriculant average itself as a minimum target."
+      "currentBands": "Volunteer clinical hours are benchmarked separately from paid clinical hours, with volunteer clinical serving as the primary planning benchmark and paid clinical serving as supporting context. For non-clinical service, the model uses planning ranges centered on sustained, community-facing involvement rather than the AAMC class-wide average.",
+      "rationale": "These ranges are transparent planning heuristics informed by AAMC data, AMCAS activity categories, and university advising guidance. They are not official national cutoffs. UVA advising suggests roughly 100 to 200 hours of clinical volunteering or work, AMCAS separates volunteer clinical activity from paid clinical employment, and AAMC's 2025 MD matriculant data reports 717 average community-service hours across the whole matriculant class. That AAMC figure is descriptive mean data, not a required target, and it is influenced by some very high-hour applicants. The app therefore treats quality, consistency, and impact of service as more important than chasing the mean."
     },
     {
       "category": "Shadowing and research",
-      "currentBands": "Shadowing stays low-weight, peaks in roughly the 40 to 80 hour range, and research weight increases only for research-heavy school preferences.",
-      "rationale": "AAMC guidance makes clear that shadowing can be supplemented by other clinical exposure, respected university advising pages usually cluster shadowing around roughly 20 to 50 hours, and research expectations vary by school mission. The app therefore treats shadowing as a bounded planning band instead of a category where more hours always help."
+      "currentBands": "Shadowing stays low-weight and is tracked within roughly a 40 to 80 hour planning range. Research weight increases only for research-heavy school preferences.",
+      "rationale": "AAMC guidance makes clear that shadowing can be supplemented by other clinical exposure, respected university advising pages usually cluster shadowing around roughly 20 to 50 hours, and research expectations vary by school mission. The app therefore treats shadowing as a bounded planning band with diminishing returns rather than a category where more hours always help."
     },
     {
       "category": "Category weighting",
@@ -314,8 +316,8 @@
     },
     {
       "category": "Letters of recommendation",
-      "currentBands": "Committee letter or packet is strongest. Without that, the model looks for about 2 science-faculty letters plus at least 1 to 2 additional letters from non-science faculty, research mentors, or clinical/service supervisors.",
-      "rationale": "AAMC says letter requirements vary by school, so the app does not claim one universal formula. Instead it uses AAMC guidance plus multiple advising sources that converge on two science letters as the core baseline, then treats additional academic or supervisor letters as the next layer of strength."
+      "currentBands": "Committee letter or packet is strongest. Without that, the model looks for a conservative common pattern of about 2 science-faculty letters plus 1 to 2 additional letters from non-science faculty, research mentors, or clinical/service supervisors.",
+      "rationale": "AAMC says letter requirements vary by school, so the app does not claim one universal formula. Instead it uses AAMC guidance plus multiple advising sources that converge on two science letters as a conservative common pattern, then treats additional academic or supervisor letters as the next layer of strength."
     }
   ]
 }
