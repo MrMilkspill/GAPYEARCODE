@@ -32,23 +32,29 @@ def _is_duplicate_account_error(message: str) -> bool:
 
 
 @router.post("/register", response_model=RegisterAccountResponse, status_code=status.HTTP_201_CREATED)
-async def register_account(payload: RegisterAccountRequest) -> RegisterAccountResponse:
+def register_account(payload: RegisterAccountRequest) -> RegisterAccountResponse:
     settings = get_settings()
 
-    async with httpx.AsyncClient(timeout=20) as client:
-        response = await client.post(
-            f"{settings.supabase_url}/auth/v1/admin/users",
-            headers={
-                "Authorization": f"Bearer {settings.supabase_service_role_key}",
-                "apikey": settings.supabase_service_role_key,
-                "Content-Type": "application/json",
-            },
-            json={
-                "email": payload.email,
-                "password": payload.password,
-                "email_confirm": True,
-                "user_metadata": {"full_name": payload.full_name},
-            },
+    try:
+        with httpx.Client(timeout=20) as client:
+            response = client.post(
+                f"{settings.supabase_url}/auth/v1/admin/users",
+                headers={
+                    "Authorization": f"Bearer {settings.supabase_service_role_key}",
+                    "apikey": settings.supabase_service_role_key,
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "email": payload.email,
+                    "password": payload.password,
+                    "email_confirm": True,
+                    "user_metadata": {"full_name": payload.full_name},
+                },
+            )
+    except httpx.HTTPError:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Unable to reach Supabase Auth while creating account. Try again in a moment.",
         )
 
     if response.status_code >= 400:
