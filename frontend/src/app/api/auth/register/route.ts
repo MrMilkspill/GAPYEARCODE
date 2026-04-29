@@ -33,15 +33,19 @@ function getBackendUnavailableMessage(baseUrl: string) {
 }
 
 
-function extractErrorMessage(payload: unknown) {
+function extractErrorMessage(payload: unknown, fallbackText = "") {
   if (payload && typeof payload === "object") {
-    for (const key of ["msg", "message", "error_description", "error"]) {
+    for (const key of ["detail", "msg", "message", "error_description", "error"]) {
       const value = (payload as Record<string, unknown>)[key];
 
       if (typeof value === "string" && value.trim()) {
         return value.trim();
       }
     }
+  }
+
+  if (fallbackText.trim()) {
+    return fallbackText.trim().slice(0, 300);
   }
 
   return "Unable to create account.";
@@ -91,6 +95,13 @@ async function createSupabaseAccount(request: Request) {
   const fullName =
     typeof account.full_name === "string" ? account.full_name.trim() : "";
 
+  if (!email || !fullName || !password) {
+    return NextResponse.json(
+      { detail: "Email, full name, and password are required." },
+      { status: 400 },
+    );
+  }
+
   let response: Response;
 
   try {
@@ -109,7 +120,11 @@ async function createSupabaseAccount(request: Request) {
       },
       method: "POST",
     });
-  } catch {
+  } catch (error) {
+    console.error("[api/auth/register] Supabase Auth request failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+
     return NextResponse.json(
       { detail: "Unable to reach Supabase Auth while creating account. Try again in a moment." },
       { status: 502 },
@@ -118,13 +133,18 @@ async function createSupabaseAccount(request: Request) {
 
   const text = await response.text();
   const contentType = response.headers.get("content-type") ?? "";
-  const data =
-    contentType.includes("application/json") && text.trim()
-      ? (JSON.parse(text) as unknown)
-      : null;
+  let data: unknown = null;
+
+  if (contentType.includes("application/json") && text.trim()) {
+    try {
+      data = JSON.parse(text) as unknown;
+    } catch {
+      data = null;
+    }
+  }
 
   if (!response.ok) {
-    let detail = extractErrorMessage(data);
+    let detail = extractErrorMessage(data, text);
     let status = response.status >= 500 ? 502 : 400;
 
     if (isDuplicateAccountError(detail)) {
@@ -132,7 +152,15 @@ async function createSupabaseAccount(request: Request) {
       status = 409;
     }
 
-    return NextResponse.json({ detail }, { status });
+    console.error("[api/auth/register] Supabase Auth rejected account creation", {
+      detail,
+      upstreamStatus: response.status,
+    });
+
+    return NextResponse.json(
+      { detail, upstreamStatus: response.status },
+      { status },
+    );
   }
 
   const user =
